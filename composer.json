@@ -1,0 +1,70 @@
+{
+  "name": "fi1a/crawler",
+  "type": "library",
+  "description": "PHP Web crawler",
+  "keywords": [],
+  "homepage": "https://github.com/fi1a/crawler",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Fi1a",
+      "email": "fi1a@icloud.com"
+    }
+  ],
+  "require": {
+    "php": "^7.3 || ^8"
+  },
+  "suggest": {
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9.5",
+    "slevomat/coding-standard": "^8.6",
+    "squizlabs/php_codesniffer": "^3.7",
+    "vimeo/psalm": "^4.3",
+    "captainhook/captainhook": "^5.11",
+    "ext-posix": "*"
+  },
+  "config": {
+    "sort-packages": true,
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true
+    }
+  },
+  "autoload": {
+    "psr-4": {
+      "Fi1a\\Crawler\\": "src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Fi1a\\Unit\\Crawler\\": "tests"
+    }
+  },
+  "scripts": {
+    "fl:lint": "phpcs --config-set php_version 70300 && phpcs --cache=build/cache/phpcs.cache",
+    "fl:phpcbf": "phpcbf --cache=build/cache/phpcbf.cache",
+    "fl:test:unit:coverage:ci": "phpunit --coverage-clover build/logs/clover.xml",
+    "fl:test:unit": "phpunit",
+    "fl:psalm": "psalm",
+    "fl:check": [
+      "@fl:lint",
+      "@fl:psalm",
+      "@fl:test:unit"
+    ],
+    "pre-commit": [
+      "@fl:lint",
+      "@fl:psalm"
+    ],
+    "pre-push": [
+      "@fl:test:unit"
+    ]
+  },
+  "scripts-descriptions": {
+    "fl:lint": "Проверяет весь исходный код на соответсвие стандартам.",
+    "fl:phpcbf": "Поправляет весь исходный код на соответсвие стандартам.",
+    "fl:test:unit:coverage:ci": "Запускает все модульные тесты и генериреут отчет покрытия Clover.",
+    "fl:psalm": "Статический анализ",
+    "fl:check": "Полная проверка кода",
+    "fl:test:unit": "Модульное тестирование"
+  }
+}
