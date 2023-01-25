@@ -23,4 +23,14 @@ class ConfigTest extends TestCase
         $config->addStartUrl($this->getUrl('/start2.html'));
         $this->assertCount(2, $config->getStartUrls());
     }
+
+    /**
+     * Добавить точку входа (исключение при пустом хосте)
+     */
+    public function testStartUrlsHostException(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $config = new Config();
+        $config->addStartUrl('/start1.html');
+    }
 }
