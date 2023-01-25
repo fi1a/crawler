@@ -14,7 +14,7 @@ use InvalidArgumentException;
  */
 class Config extends ValueObject implements ConfigInterface
 {
-    protected $modelKeys = ['startUrls',];
+    protected $modelKeys = ['startUri',];
 
     /**
      * @inheritDoc
@@ -22,24 +22,24 @@ class Config extends ValueObject implements ConfigInterface
     protected function getDefaultModelValues()
     {
         return [
-            'startUrls' => [],
+            'startUri' => [],
         ];
     }
 
     /**
      * @inheritDoc
      */
-    public function addStartUrl(string $startUrl)
+    public function addStartUri(string $startUri)
     {
-        $startUrls = $this->getStartUrls();
-        if (!($startUrl instanceof UriInterface)) {
-            $startUrl = new Uri($startUrl);
+        $uri = $this->getStartUri();
+        if (!($startUri instanceof UriInterface)) {
+            $startUri = new Uri($startUri);
         }
-        if (!$startUrl->getHost()) {
+        if (!$startUri->getHost()) {
             throw new InvalidArgumentException('Не задан хост');
         }
-        $startUrls[] = $startUrl;
-        $this->modelSet('startUrls', $startUrls);
+        $uri[] = $startUri;
+        $this->modelSet('startUri', $uri);
 
         return $this;
     }
@@ -47,11 +47,11 @@ class Config extends ValueObject implements ConfigInterface
     /**
      * @inheritDoc
      */
-    public function getStartUrls(): array
+    public function getStartUri(): array
     {
-        /** @var array<int, UriInterface> $startUrls */
-        $startUrls = $this->modelGet('startUrls');
+        /** @var array<int, UriInterface> $startUri */
+        $startUri = $this->modelGet('startUri');
 
-        return $startUrls;
+        return $startUri;
     }
 }

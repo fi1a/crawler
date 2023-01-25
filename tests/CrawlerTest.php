@@ -23,8 +23,8 @@ class CrawlerTest extends TestCase
     {
         $config = new Config();
 
-        $config->addStartUrl($this->getUrl('/index.html'));
-        $config->addStartUrl($this->getUrl('/link1.html'));
+        $config->addStartUri($this->getUrl('/index.html'));
+        $config->addStartUri($this->getUrl('/link1.html'));
 
         return $config;
     }

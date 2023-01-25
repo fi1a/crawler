@@ -17,12 +17,12 @@ interface ConfigInterface extends ValueObjectInterface
      *
      * @return $this
      */
-    public function addStartUrl(string $startUrl);
+    public function addStartUri(string $startUri);
 
     /**
      * Возвращает точки входа, с которых начинается обход
      *
      * @return array<int, UriInterface>
      */
-    public function getStartUrls(): array;
+    public function getStartUri(): array;
 }
