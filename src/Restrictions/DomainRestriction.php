@@ -6,6 +6,7 @@ namespace Fi1a\Crawler\Restrictions;
 
 use Fi1a\Http\Uri;
 use Fi1a\Http\UriInterface;
+use InvalidArgumentException;
 
 /**
  * Ограничение по доменам
@@ -13,22 +14,22 @@ use Fi1a\Http\UriInterface;
 class DomainRestriction implements RestrictionInterface
 {
     /**
-     * @var array<int, UriInterface>
+     * @var UriInterface
      */
-    protected $uri;
+    protected $allow;
 
     /**
-     * @param array<int, string>|array<int, UriInterface> $uri
+     * @param string|UriInterface $allow
      */
-    public function __construct(array $uri)
+    public function __construct($allow)
     {
-        $this->uri = [];
-        foreach ($uri as $item) {
-            if (!($item instanceof UriInterface)) {
-                $item = new Uri($item);
-            }
-            $this->uri[] = $item;
+        if (!($allow instanceof UriInterface)) {
+            $allow = new Uri($allow);
         }
+        if (!$allow->getHost()) {
+            throw new InvalidArgumentException('Не задан разрешенный хост');
+        }
+        $this->allow = $allow;
     }
 
     /**
@@ -40,12 +41,6 @@ class DomainRestriction implements RestrictionInterface
             return true;
         }
 
-        foreach ($this->uri as $item) {
-            if ($item->getHost() === $uri->getHost()) {
-                return true;
-            }
-        }
-
-        return false;
+        return $this->allow->getHost() === $uri->getHost();
     }
 }

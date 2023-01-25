@@ -7,6 +7,7 @@ namespace Fi1a\Unit\Crawler\Restrictions;
 use Fi1a\Crawler\Restrictions\DomainRestriction;
 use Fi1a\Http\Uri;
 use Fi1a\Unit\Crawler\TestCases\TestCase;
+use InvalidArgumentException;
 
 /**
  * Ограничение по доменам
@@ -18,7 +19,7 @@ class DomainRestrictionTest extends TestCase
      */
     public function testAllow(): void
     {
-        $restriction = new DomainRestriction([$this->getUrl('')]);
+        $restriction = new DomainRestriction($this->getUrl(''));
         $this->assertTrue($restriction->isAllow(new Uri($this->getUrl('/'))));
         $this->assertTrue($restriction->isAllow(new Uri($this->getUrl('/index.html'))));
         $this->assertTrue($restriction->isAllow(new Uri('/index.html')));
@@ -30,7 +31,7 @@ class DomainRestrictionTest extends TestCase
      */
     public function testAllowUri(): void
     {
-        $restriction = new DomainRestriction([new Uri($this->getUrl(''))]);
+        $restriction = new DomainRestriction(new Uri($this->getUrl('')));
         $this->assertTrue($restriction->isAllow(new Uri($this->getUrl('/'))));
         $this->assertTrue($restriction->isAllow(new Uri($this->getUrl('/index.html'))));
         $this->assertTrue($restriction->isAllow(new Uri('/index.html')));
@@ -38,21 +39,11 @@ class DomainRestrictionTest extends TestCase
     }
 
     /**
-     * Разрешено
-     */
-    public function testAllowDomains(): void
-    {
-        $restriction = new DomainRestriction([$this->getUrl(''), new Uri('https://domain.ru')]);
-        $this->assertTrue($restriction->isAllow(new Uri('https://domain.ru')));
-        $this->assertTrue($restriction->isAllow(new Uri('https://domain.ru/index.html')));
-    }
-
-    /**
      * Не разрешено
      */
     public function testNotAllow(): void
     {
-        $restriction = new DomainRestriction([$this->getUrl('')]);
+        $restriction = new DomainRestriction($this->getUrl(''));
         $this->assertFalse($restriction->isAllow(new Uri('https://domain.ru')));
         $this->assertFalse($restriction->isAllow(new Uri('https://domain.ru/index.html')));
     }
@@ -62,8 +53,17 @@ class DomainRestrictionTest extends TestCase
      */
     public function testNotAllowUri(): void
     {
-        $restriction = new DomainRestriction([new Uri($this->getUrl(''))]);
+        $restriction = new DomainRestriction(new Uri($this->getUrl('')));
         $this->assertFalse($restriction->isAllow(new Uri('https://domain.ru')));
         $this->assertFalse($restriction->isAllow(new Uri('https://domain.ru/index.html')));
+    }
+
+    /**
+     * Исключение при пустом разрешенном хосте
+     */
+    public function testException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        new DomainRestriction('');
     }
 }
