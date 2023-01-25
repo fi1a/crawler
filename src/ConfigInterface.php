@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Fi1a\Crawler;
 
 use Fi1a\Collection\DataType\ValueObjectInterface;
+use Fi1a\Http\UriInterface;
 
 /**
  * Конфигурация
@@ -16,12 +17,12 @@ interface ConfigInterface extends ValueObjectInterface
      *
      * @return $this
      */
-    public function addStartUrl(?string $startUrl);
+    public function addStartUrl(string $startUrl);
 
     /**
      * Возвращает точки входа, с которых начинается обход
      *
-     * @return array<int, string>
+     * @return array<int, UriInterface>
      */
     public function getStartUrls(): array;
 }

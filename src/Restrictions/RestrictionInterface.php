@@ -7,7 +7,7 @@ namespace Fi1a\Crawler\Restrictions;
 use Fi1a\Http\UriInterface;
 
 /**
- * Ограничение по адресу
+ * Ограничение
  */
 interface RestrictionInterface
 {

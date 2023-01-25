@@ -9,7 +9,7 @@ use Fi1a\Http\UriInterface;
 use InvalidArgumentException;
 
 /**
- * Ограничение по доменам
+ * Ограничение по домену
  */
 class DomainRestriction implements RestrictionInterface
 {
