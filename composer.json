@@ -11,9 +11,11 @@
       "email": "support@fi1a.ru"
     }
   ],
+  "minimum-stability": "dev",
   "require": {
     "php": "^7.3 || ^8",
-    "fi1a/collection": "^2.0"
+    "fi1a/collection": "^2.0",
+    "fi1a/http": "dev-main"
   },
   "suggest": {
   },
