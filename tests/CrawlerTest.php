@@ -48,11 +48,25 @@ class CrawlerTest extends TestCase
         $crawler->run();
     }
 
+    /**
+     * Ограничения по умолчанию
+     */
     public function testDefaultRestrictions(): void
     {
         $crawler = $this->getCrawler();
 
         $crawler->run();
         $this->assertCount(1, $crawler->getRestrictions());
+    }
+
+    /**
+     * Возвращает обойденные адреса
+     */
+    public function testBypassedUri(): void
+    {
+        $crawler = $this->getCrawler();
+
+        $crawler->run();
+        $this->assertCount(2, $crawler->getBypassedUri());
     }
 }
