@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Fi1a\Crawler;
 
+use Fi1a\Collection\Queue;
+use Fi1a\Collection\QueueInterface;
 use Fi1a\Crawler\Restrictions\DomainRestriction;
 use Fi1a\Crawler\Restrictions\RestrictionCollection;
 use Fi1a\Crawler\Restrictions\RestrictionCollectionInterface;
 use Fi1a\Crawler\Restrictions\RestrictionInterface;
+use Fi1a\Http\UriInterface;
 use InvalidArgumentException;
 
 /**
@@ -25,10 +28,22 @@ class Crawler implements CrawlerInterface
      */
     protected $config;
 
+    /**
+     * @var QueueInterface
+     */
+    protected $queue;
+
+    /**
+     * @var UriCollectionInterface
+     */
+    protected $bypassedUri;
+
     public function __construct(ConfigInterface $config)
     {
         $this->config = $config;
         $this->restrictions = new RestrictionCollection();
+        $this->queue = new Queue();
+        $this->bypassedUri = new UriCollection();
     }
 
     /**
@@ -39,6 +54,13 @@ class Crawler implements CrawlerInterface
         $this->validateConfig();
         if (!count($this->restrictions)) {
             $this->addDefaultRestrictions();
+        }
+        $this->initStartUrls();
+
+        /** @psalm-suppress MixedAssignment */
+        while ($uri = $this->queue->pollBegin()) {
+            /** @var UriInterface $uri */
+            $this->bypassedUri[] = $uri;
         }
     }
 
@@ -58,6 +80,14 @@ class Crawler implements CrawlerInterface
     public function getRestrictions(): RestrictionCollectionInterface
     {
         return $this->restrictions;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getBypassedUri(): UriCollectionInterface
+    {
+        return $this->bypassedUri;
     }
 
     /**
@@ -83,6 +113,16 @@ class Crawler implements CrawlerInterface
     {
         if (!count($this->config->getStartUrls())) {
             throw new InvalidArgumentException('Не задана точка входа ($config->addStartUrl())');
+        }
+    }
+
+    /**
+     * Добавляем точки входа в очередь
+     */
+    protected function initStartUrls(): void
+    {
+        foreach ($this->config->getStartUrls() as $startUrl) {
+            $this->queue->addEnd($startUrl);
         }
     }
 }

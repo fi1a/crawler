@@ -30,4 +30,9 @@ interface CrawlerInterface
      * Возвращает ограничения
      */
     public function getRestrictions(): RestrictionCollectionInterface;
+
+    /**
+     * Возвращает обойденные адреса
+     */
+    public function getBypassedUri(): UriCollectionInterface;
 }
