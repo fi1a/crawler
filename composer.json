@@ -8,11 +8,12 @@
   "authors": [
     {
       "name": "Fi1a",
-      "email": "fi1a@icloud.com"
+      "email": "support@fi1a.ru"
     }
   ],
   "require": {
-    "php": "^7.3 || ^8"
+    "php": "^7.3 || ^8",
+    "fi1a/collection": "^2.0"
   },
   "suggest": {
   },
@@ -21,8 +22,7 @@
     "slevomat/coding-standard": "^8.6",
     "squizlabs/php_codesniffer": "^3.7",
     "vimeo/psalm": "^4.3",
-    "captainhook/captainhook": "^5.11",
-    "ext-posix": "*"
+    "captainhook/captainhook": "^5.11"
   },
   "config": {
     "sort-packages": true,
