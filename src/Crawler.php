@@ -96,7 +96,7 @@ class Crawler implements CrawlerInterface
     protected function addDefaultRestrictions(): void
     {
         $hosts = [];
-        foreach ($this->config->getStartUrls() as $startUrl) {
+        foreach ($this->config->getStartUri() as $startUrl) {
             $host = mb_strtolower($startUrl->getHost());
             if (in_array($host, $hosts)) {
                 continue;
@@ -111,7 +111,7 @@ class Crawler implements CrawlerInterface
      */
     protected function validateConfig(): void
     {
-        if (!count($this->config->getStartUrls())) {
+        if (!count($this->config->getStartUri())) {
             throw new InvalidArgumentException('Не задана точка входа ($config->addStartUrl())');
         }
     }
@@ -121,7 +121,7 @@ class Crawler implements CrawlerInterface
      */
     protected function initStartUrls(): void
     {
-        foreach ($this->config->getStartUrls() as $startUrl) {
+        foreach ($this->config->getStartUri() as $startUrl) {
             $this->queue->addEnd($startUrl);
         }
     }

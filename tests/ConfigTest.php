@@ -15,22 +15,22 @@ class ConfigTest extends TestCase
     /**
      * Добавить точку входа, с которой начинается обход
      */
-    public function testStartUrls(): void
+    public function testStartUri(): void
     {
         $config = new Config();
-        $this->assertCount(0, $config->getStartUrls());
-        $config->addStartUrl($this->getUrl('/start1.html'));
-        $config->addStartUrl($this->getUrl('/start2.html'));
-        $this->assertCount(2, $config->getStartUrls());
+        $this->assertCount(0, $config->getStartUri());
+        $config->addStartUri($this->getUrl('/start1.html'));
+        $config->addStartUri($this->getUrl('/start2.html'));
+        $this->assertCount(2, $config->getStartUri());
     }
 
     /**
      * Добавить точку входа (исключение при пустом хосте)
      */
-    public function testStartUrlsHostException(): void
+    public function testStartUriHostException(): void
     {
         $this->expectException(\InvalidArgumentException::class);
         $config = new Config();
-        $config->addStartUrl('/start1.html');
+        $config->addStartUri('/start1.html');
     }
 }
