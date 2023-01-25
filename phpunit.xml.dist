@@ -5,6 +5,7 @@
     backupGlobals="false"
     backupStaticAttributes="false"
     colors="true"
+    bootstrap="tests/autoload.php"
     failOnRisky="true"
     failOnWarning="true"
 >
@@ -28,4 +29,8 @@
             <directory>./tests</directory>
         </testsuite>
     </testsuites>
+    <php>
+        <const name="WEB_SERVER_HOST" value="127.0.0.1" />
+        <const name="WEB_SERVER_HTTPS_PORT" value="3000" />
+    </php>
 </phpunit>
