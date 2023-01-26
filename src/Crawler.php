@@ -11,6 +11,8 @@ use Fi1a\Crawler\Restrictions\RestrictionCollectionInterface;
 use Fi1a\Crawler\Restrictions\RestrictionInterface;
 use Fi1a\Crawler\Restrictions\UriRestriction;
 use Fi1a\Http\UriInterface;
+use Fi1a\HttpClient\HttpClient;
+use Fi1a\HttpClient\HttpClientInterface;
 use InvalidArgumentException;
 
 /**
@@ -34,16 +36,22 @@ class Crawler implements CrawlerInterface
     protected $queue;
 
     /**
-     * @var UriCollectionInterface
+     * @var BypassedUriCollectionInterface
      */
     protected $bypassedUri;
+
+    /**
+     * @var HttpClientInterface
+     */
+    protected $httpClient;
 
     public function __construct(ConfigInterface $config)
     {
         $this->config = $config;
         $this->restrictions = new RestrictionCollection();
         $this->queue = new Queue();
-        $this->bypassedUri = new UriCollection();
+        $this->bypassedUri = new BypassedUriCollection();
+        $this->httpClient = new HttpClient($this->config->getHttpClientConfig());
     }
 
     /**
@@ -60,7 +68,13 @@ class Crawler implements CrawlerInterface
         /** @psalm-suppress MixedAssignment */
         while ($uri = $this->queue->pollBegin()) {
             /** @var UriInterface $uri */
-            $this->bypassedUri[] = $uri;
+            $response = $this->httpClient->get($uri);
+
+            $bypassed = new BypassedUri();
+            $bypassed->uri = $uri;
+            $bypassed->statusCode = $response->getStatusCode();
+
+            $this->bypassedUri[] = $bypassed;
         }
     }
 
@@ -85,7 +99,7 @@ class Crawler implements CrawlerInterface
     /**
      * @inheritDoc
      */
-    public function getBypassedUri(): UriCollectionInterface
+    public function getBypassedUri(): BypassedUriCollectionInterface
     {
         return $this->bypassedUri;
     }

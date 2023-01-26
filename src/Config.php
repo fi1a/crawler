@@ -7,6 +7,8 @@ namespace Fi1a\Crawler;
 use Fi1a\Collection\DataType\ValueObject;
 use Fi1a\Http\Uri;
 use Fi1a\Http\UriInterface;
+use Fi1a\HttpClient\Config as HttpClientConfig;
+use Fi1a\HttpClient\ConfigInterface as HttpClientConfigInterface;
 use InvalidArgumentException;
 
 /**
@@ -14,7 +16,7 @@ use InvalidArgumentException;
  */
 class Config extends ValueObject implements ConfigInterface
 {
-    protected $modelKeys = ['startUri',];
+    protected $modelKeys = ['startUri', 'httpClientConfig'];
 
     /**
      * @inheritDoc
@@ -23,6 +25,7 @@ class Config extends ValueObject implements ConfigInterface
     {
         return [
             'startUri' => [],
+            'httpClientConfig' => new HttpClientConfig(),
         ];
     }
 
@@ -53,5 +56,26 @@ class Config extends ValueObject implements ConfigInterface
         $startUri = $this->modelGet('startUri');
 
         return $startUri;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setHttpClientConfig(HttpClientConfigInterface $config)
+    {
+        $this->modelSet('httpClientConfig', $config);
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getHttpClientConfig(): HttpClientConfigInterface
+    {
+        /** @var HttpClientConfigInterface $config */
+        $config = $this->modelGet('httpClientConfig');
+
+        return $config;
     }
 }

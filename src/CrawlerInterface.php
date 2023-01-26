@@ -34,5 +34,5 @@ interface CrawlerInterface
     /**
      * Возвращает обойденные адреса
      */
-    public function getBypassedUri(): UriCollectionInterface;
+    public function getBypassedUri(): BypassedUriCollectionInterface;
 }

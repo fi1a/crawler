@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Fi1a\Unit\Crawler;
 
 use Fi1a\Crawler\Config;
+use Fi1a\HttpClient\Config as HttpClientConfig;
+use Fi1a\HttpClient\ConfigInterface as HttpClientConfigInterface;
 use Fi1a\Unit\Crawler\TestCases\TestCase;
 
 /**
@@ -32,5 +34,16 @@ class ConfigTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $config = new Config();
         $config->addStartUri('/start1.html');
+    }
+
+    /**
+     * Конфигурация http-клиента
+     */
+    public function testHttpClientConfig(): void
+    {
+        $config = new Config();
+        $this->assertInstanceOf(HttpClientConfigInterface::class, $config->getHttpClientConfig());
+        $config->setHttpClientConfig(new HttpClientConfig());
+        $this->assertInstanceOf(HttpClientConfigInterface::class, $config->getHttpClientConfig());
     }
 }
