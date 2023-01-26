@@ -6,10 +6,10 @@ namespace Fi1a\Crawler;
 
 use Fi1a\Collection\Queue;
 use Fi1a\Collection\QueueInterface;
-use Fi1a\Crawler\Restrictions\DomainRestriction;
 use Fi1a\Crawler\Restrictions\RestrictionCollection;
 use Fi1a\Crawler\Restrictions\RestrictionCollectionInterface;
 use Fi1a\Crawler\Restrictions\RestrictionInterface;
+use Fi1a\Crawler\Restrictions\UriRestriction;
 use Fi1a\Http\UriInterface;
 use InvalidArgumentException;
 
@@ -95,14 +95,16 @@ class Crawler implements CrawlerInterface
      */
     protected function addDefaultRestrictions(): void
     {
-        $hosts = [];
+        $existing = [];
         foreach ($this->config->getStartUri() as $startUrl) {
-            $host = mb_strtolower($startUrl->getHost());
-            if (in_array($host, $hosts)) {
+            $uri = clone $startUrl;
+            $uri->replace($startUrl->getNormalizedBasePath());
+            if (in_array($uri->getUrl(), $existing)) {
                 continue;
             }
-            $hosts[] = $host;
-            $this->addRestriction(new DomainRestriction($startUrl));
+            $existing[] = $uri->getUrl();
+
+            $this->addRestriction(new UriRestriction($uri));
         }
     }
 

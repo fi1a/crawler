@@ -11,7 +11,7 @@ use InvalidArgumentException;
 /**
  * Ограничение по домену
  */
-class DomainRestriction implements RestrictionInterface
+class UriRestriction implements RestrictionInterface
 {
     /**
      * @var UriInterface
@@ -37,10 +37,13 @@ class DomainRestriction implements RestrictionInterface
      */
     public function isAllow(UriInterface $uri): bool
     {
-        if (!$uri->getHost()) {
+        if (!$uri->getHost() && $this->allow->getPath() === '/') {
             return true;
         }
+        if ($uri->getHost() && $this->allow->getHost() !== $uri->getHost()) {
+            return false;
+        }
 
-        return $this->allow->getHost() === $uri->getHost();
+        return mb_stripos($uri->getPath(), $this->allow->getPath()) === 0;
     }
 }
