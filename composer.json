@@ -16,7 +16,9 @@
     "php": "^7.3 || ^8",
     "fi1a/collection": "^2.0",
     "fi1a/http": "dev-main",
-    "fi1a/http-client": "dev-main"
+    "fi1a/http-client": "dev-main",
+    "fi1a/simplequery": "^2.0",
+    "ext-dom": "*"
   },
   "suggest": {
   },
