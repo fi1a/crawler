@@ -26,6 +26,8 @@ class CrawlerTest extends TestCase
         $config->addStartUri($this->getUrl('/index.html'));
         $config->addStartUri($this->getUrl('/link1.html'));
 
+        $config->getHttpClientConfig()->setSslVerify(false);
+
         return $config;
     }
 
