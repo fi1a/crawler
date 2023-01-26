@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Fi1a\Unit\Crawler\UriParsers;
 
 use Fi1a\Crawler\UriParsers\HtmlUriParser;
-use PHPUnit\Framework\TestCase;
+use Fi1a\Unit\Crawler\TestCases\TestCase;
 
 /**
  * Парсит html и возвращает uri для обхода
