@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Fi1a\Crawler\UriParsers;
 
+use Fi1a\Crawler\PageInterface;
 use Fi1a\Crawler\UriCollectionInterface;
 
 /**
@@ -13,8 +14,6 @@ interface UriParserInterface
 {
     /**
      * Возвращает uri для обхода
-     *
-     * @param mixed $body
      */
-    public function parse($body): UriCollectionInterface;
+    public function parse(PageInterface $page): UriCollectionInterface;
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Fi1a\Crawler\UriParsers;
 
+use Fi1a\Crawler\PageInterface;
 use Fi1a\Crawler\UriCollection;
 use Fi1a\Crawler\UriCollectionInterface;
 use Fi1a\Http\Uri;
@@ -18,11 +19,11 @@ class HtmlUriParser implements UriParserInterface
     /**
      * @inheritDoc
      */
-    public function parse($body): UriCollectionInterface
+    public function parse(PageInterface $page): UriCollectionInterface
     {
         $collection = new UriCollection();
 
-        $sq = new SimpleQuery((string) $body);
+        $sq = new SimpleQuery((string) $page->getBody());
         /** @psalm-suppress TooManyArguments */
         $links = $sq('a');
         /** @var \DOMElement $link */
