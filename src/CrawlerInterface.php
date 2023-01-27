@@ -6,6 +6,7 @@ namespace Fi1a\Crawler;
 
 use Fi1a\Crawler\Restrictions\RestrictionCollectionInterface;
 use Fi1a\Crawler\Restrictions\RestrictionInterface;
+use Fi1a\Crawler\UriParsers\UriParserInterface;
 
 /**
  * Web Crawler
@@ -34,5 +35,24 @@ interface CrawlerInterface
     /**
      * Возвращает обойденные адреса
      */
-    public function getBypassedUri(): BypassedUriCollectionInterface;
+    public function getBypassedPages(): PageCollectionInterface;
+
+    /**
+     * Устанавливает парсер uri для обхода (в зависимости от типа контента)
+     *
+     * @return $this
+     */
+    public function setUriParser(UriParserInterface $parser, ?string $mime = null);
+
+    /**
+     * Проверяет наличие парсера uri (в зависимости от типа контента)
+     */
+    public function hasUriParser(?string $mime = null): bool;
+
+    /**
+     * Удаляет парсер uri (в зависимости от типа контента)
+     *
+     * @return $this
+     */
+    public function removeUriParser(?string $mime = null);
 }
