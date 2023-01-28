@@ -16,7 +16,9 @@ use InvalidArgumentException;
  */
 class Config extends ValueObject implements ConfigInterface
 {
-    protected $modelKeys = ['startUri', 'httpClientConfig', 'verbose'];
+    protected $modelKeys = [
+        'startUri', 'httpClientConfig', 'verbose', 'logChannel',
+    ];
 
     /**
      * @inheritDoc
@@ -27,6 +29,7 @@ class Config extends ValueObject implements ConfigInterface
             'startUri' => [],
             'httpClientConfig' => new HttpClientConfig(),
             'verbose' => self::VERBOSE_NORMAL,
+            'logChannel' => 'crawler',
         ];
     }
 
@@ -102,5 +105,23 @@ class Config extends ValueObject implements ConfigInterface
     public function getVerbose(): int
     {
         return (int) $this->modelGet('verbose');
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setLogChannel(string $logChannel)
+    {
+        $this->modelSet('logChannel', $logChannel);
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getLogChannel(): string
+    {
+        return (string) $this->modelGet('logChannel');
     }
 }

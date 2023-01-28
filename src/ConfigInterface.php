@@ -61,4 +61,16 @@ interface ConfigInterface extends ValueObjectInterface
      * Вернуть уровень подробности вывода
      */
     public function getVerbose(): int;
+
+    /**
+     * Установить канал логирования
+     *
+     * @return $this
+     */
+    public function setLogChannel(string $logChannel);
+
+    /**
+     * Вернуть канал логирования
+     */
+    public function getLogChannel(): string;
 }

@@ -59,7 +59,7 @@ class TestCase extends PHPUnitTestCase
      */
     protected function getPage(): PageInterface
     {
-        $page = new Page(new Uri($this->getUrl('/index.html')));
+        $page = new Page(new Uri($this->getUrl('/index.html')), 0);
 
         $page->setConvertedUri(new Uri('/index.html'));
         $page->setBody(file_get_contents(__DIR__ . '/../Fixtures/Server/public/index.html'));

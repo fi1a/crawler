@@ -19,7 +19,7 @@ class HtmlUriParserTest extends TestCase
      */
     public function testParse(): void
     {
-        $page = new Page(new Uri('/index.html'));
+        $page = new Page(new Uri('/index.html'), 0);
 
         $page->setBody(file_get_contents(__DIR__ . '/../Fixtures/Server/public/index.html'));
 

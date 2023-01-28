@@ -20,13 +20,13 @@ class LocalUriConverterTest extends TestCase
     public function testConverter(): void
     {
         $converter = new LocalUriConverter();
-        $page = new Page(new Uri($this->getUrl('/index.html')));
+        $page = new Page(new Uri($this->getUrl('/index.html')), 0);
         $this->assertEquals('/index.html', $converter->convert($page)->getUri());
 
-        $page = new Page(new Uri($this->getUrl('/index.html?q=1')));
+        $page = new Page(new Uri($this->getUrl('/index.html?q=1')), 0);
         $this->assertEquals('/index.html?q=1', $converter->convert($page)->getUri());
 
-        $page = new Page(new Uri('/path/index.html'));
+        $page = new Page(new Uri('/path/index.html'), 0);
         $this->assertEquals('/path/index.html', $converter->convert($page)->getUri());
     }
 }

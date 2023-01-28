@@ -93,4 +93,9 @@ interface PageInterface
      * @return mixed
      */
     public function getPrepareBody();
+
+    /**
+     * Номер страницы в очереди на обработку
+     */
+    public function getIndex(): int;
 }

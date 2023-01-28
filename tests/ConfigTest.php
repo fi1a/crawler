@@ -79,4 +79,15 @@ class ConfigTest extends TestCase
         $config = new Config();
         $config->setVerbose(100);
     }
+
+    /**
+     * Канал логирования
+     */
+    public function testLogChannel(): void
+    {
+        $config = new Config();
+        $this->assertEquals('crawler', $config->getLogChannel());
+        $config->setLogChannel('channel1');
+        $this->assertEquals('channel1', $config->getLogChannel());
+    }
 }

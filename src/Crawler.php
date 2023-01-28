@@ -7,6 +7,7 @@ namespace Fi1a\Crawler;
 use Fi1a\Collection\Queue;
 use Fi1a\Collection\QueueInterface;
 use Fi1a\Console\Component\ProgressbarComponent\ProgressbarComponent;
+use Fi1a\Console\Component\ProgressbarComponent\ProgressbarComponentInterface;
 use Fi1a\Console\Component\ProgressbarComponent\ProgressbarStyle;
 use Fi1a\Console\IO\ConsoleOutput;
 use Fi1a\Console\IO\ConsoleOutputInterface;
@@ -26,6 +27,8 @@ use Fi1a\Crawler\Writers\WriterInterface;
 use Fi1a\Http\UriInterface;
 use Fi1a\HttpClient\HttpClient;
 use Fi1a\HttpClient\HttpClientInterface;
+use Fi1a\Log\Logger;
+use Fi1a\Log\LoggerInterface;
 use InvalidArgumentException;
 
 /**
@@ -93,8 +96,22 @@ class Crawler implements CrawlerInterface
      */
     protected $count = 0;
 
-    public function __construct(ConfigInterface $config, ?ConsoleOutputInterface $output = null)
-    {
+    /**
+     * @var LoggerInterface
+     */
+    protected $logger;
+
+    /**
+     * @var ProgressbarComponentInterface
+     * @psalm-suppress PropertyNotSetInConstructor
+     */
+    protected $progressbar;
+
+    public function __construct(
+        ConfigInterface $config,
+        ?ConsoleOutputInterface $output = null,
+        ?LoggerInterface $logger = null
+    ) {
         $this->config = $config;
         $this->restrictions = new RestrictionCollection();
         $this->queue = new Queue();
@@ -105,6 +122,14 @@ class Crawler implements CrawlerInterface
             $output = new ConsoleOutput(new Formatter());
         }
         $this->output = $output;
+        if ($logger === null) {
+            /** @var LoggerInterface|false $logger */
+            $logger = logger($this->config->getLogChannel());
+            if ($logger === false) {
+                $logger = new Logger($this->config->getLogChannel());
+            }
+        }
+        $this->logger = $logger;
     }
 
     /**
@@ -120,59 +145,30 @@ class Crawler implements CrawlerInterface
         $this->addDefaultUriParser();
         $this->addDefaultUriConverter();
         $this->addDefaultPreparePage();
+        $runId = uniqid();
+        $this->logger->withContext(['runId' => $runId]);
+        $this->logger->info('Запуск обхода');
+        $this->output->writeln('runId: {{}}', [$runId]);
         $this->initStartUri();
 
         $progressbarStyle = new ProgressbarStyle();
         $progressbarStyle->setTemplateByName('full');
-        $progressbar = new ProgressbarComponent($this->output, $progressbarStyle);
+        $this->progressbar = new ProgressbarComponent($this->output, $progressbarStyle);
 
-        $progressbar->start($this->count);
-        $progressbar->display();
-
-        $index = 0;
+        $this->progressbar->start($this->count);
+        $this->progressbar->display();
 
         /** @psalm-suppress MixedAssignment */
         while ($page = $this->queue->pollBegin()) {
             assert($page instanceof PageInterface);
-            $index++;
-
-            $response = $this->httpClient->get($page->getUri());
-
-            $page->setStatusCode($response->getStatusCode())
-                ->setContentType($response->getBody()->getContentType())
-                ->setBody($response->getBody()->get());
-
-            if ($this->output->getVerbose() >= OutputInterface::VERBOSE_HIGHT) {
-                $progressbar->clear();
-            }
-
-            $this->output->writeln(
-                '{{}}/{{}} <color=green>Обработка uri {{|unescape}}</>',
-                [
-                    $index,
-                    $this->count,
-                    $page->getUri()->getUri(),
-                ],
-                null,
-                OutputInterface::VERBOSE_HIGHT
-            );
-
-            if ($response->isSuccess()) {
-                $this->uriParse($page);
-                $this->preparePage($page);
-                $this->write($page);
-            }
-
-            $progressbar->setMaxSteps($this->count);
-            $progressbar->increment();
-            $progressbar->display();
-
-            $this->bypassedPages[] = $page;
+            $this->processPage($page);
         }
 
-        $progressbar->finish();
+        $this->progressbar->finish();
         $this->output->writeln();
         $this->output->writeln();
+
+        $this->logger->info('Обход завершен');
     }
 
     /**
@@ -340,6 +336,12 @@ class Crawler implements CrawlerInterface
      */
     protected function initStartUri(): void
     {
+        $logUri = [];
+        foreach ($this->config->getStartUri() as $startUri) {
+            $logUri[] = $startUri->getUri();
+        }
+        $this->logger->debug('Начальные uri', [], $logUri);
+
         foreach ($this->config->getStartUri() as $startUri) {
             $this->output->writeln(
                 '    Получен uri {{|unescape}}',
@@ -367,8 +369,15 @@ class Crawler implements CrawlerInterface
             null,
             OutputInterface::VERBOSE_HIGHTEST
         );
+        $this->logger->debug(
+            'Добавлен в очередь: {{uri}}',
+            [
+                'uri' => $uri->getUri(),
+            ]
+        );
 
-        $page = new Page($uri);
+        $this->count++;
+        $page = new Page($uri, $this->count);
 
         $page->setConvertedUri($uri);
         if ($this->uriConverter) {
@@ -377,7 +386,6 @@ class Crawler implements CrawlerInterface
 
         $this->queue->addEnd($page);
         $this->pages[$uri->getUri()] = $page;
-        $this->count++;
     }
 
     /**
@@ -405,6 +413,14 @@ class Crawler implements CrawlerInterface
                 OutputInterface::VERBOSE_HIGHTEST
             );
 
+            $this->logger->debug(
+                'Получен uri {{uri}} со страницы {{pageUri}}',
+                [
+                    'uri' => $uri->getUri(),
+                    'pageUri' => $page->getUri()->getUri(),
+                ]
+            );
+
             /** @var RestrictionInterface $restriction */
             foreach ($this->restrictions as $restriction) {
                 if (!$restriction->isAllow($uri)) {
@@ -413,6 +429,12 @@ class Crawler implements CrawlerInterface
                         [],
                         null,
                         OutputInterface::VERBOSE_HIGHTEST
+                    );
+                    $this->logger->debug(
+                        'Запрещен обход для этого адреса: {{uri}}',
+                        [
+                            'uri' => $uri->getUri(),
+                        ]
                     );
 
                     break 2;
@@ -441,5 +463,53 @@ class Crawler implements CrawlerInterface
         if ($this->writer) {
             $this->writer->write($page);
         }
+    }
+
+    /**
+     * Обрабатывает страницу
+     */
+    protected function processPage(PageInterface $page): void
+    {
+        $this->logger->info('GET {{uri}}', ['uri' => $page->getUri()->getUri()]);
+        $response = $this->httpClient->get($page->getUri()->getUri());
+        $this->logger->info(
+            'Response {{uri}}: statusCode={{statusCode}} contentType={{contentType}}',
+            [
+                'uri' => $page->getUri()->getUri(),
+                'statusCode' => $response->getStatusCode(),
+                'contentType' => $response->getBody()->getContentType(),
+            ]
+        );
+
+        $page->setStatusCode($response->getStatusCode())
+            ->setContentType($response->getBody()->getContentType())
+            ->setBody($response->getBody()->get());
+
+        if ($this->output->getVerbose() >= OutputInterface::VERBOSE_HIGHT) {
+            $this->progressbar->clear();
+        }
+
+        $this->output->writeln(
+            '{{}}/{{}} <color=green>Обработка uri {{|unescape}}</>',
+            [
+                $page->getIndex(),
+                $this->count,
+                $page->getUri()->getUri(),
+            ],
+            null,
+            OutputInterface::VERBOSE_HIGHT
+        );
+
+        if ($response->isSuccess()) {
+            $this->uriParse($page);
+            $this->preparePage($page);
+            $this->write($page);
+        }
+
+        $this->progressbar->setMaxSteps($this->count);
+        $this->progressbar->increment();
+        $this->progressbar->display();
+
+        $this->bypassedPages[] = $page;
     }
 }

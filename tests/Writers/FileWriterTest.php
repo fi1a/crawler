@@ -92,7 +92,7 @@ class FileWriterTest extends TestCase
     public function testNotConvertedUri(): void
     {
         $this->expectException(ErrorException::class);
-        $page = new Page(new Uri($this->getUrl('/index.html')));
+        $page = new Page(new Uri($this->getUrl('/index.html')), 0);
         $writer = new FileWriter($this->runtimeFolder . '/web');
         $this->assertFalse($writer->write($page));
     }
@@ -104,7 +104,7 @@ class FileWriterTest extends TestCase
     {
         $this->expectException(ErrorException::class);
         $writer = new FileWriter($this->runtimeFolder . '/web');
-        $page = new Page(new Uri($this->getUrl('/path/index.html')));
+        $page = new Page(new Uri($this->getUrl('/path/index.html')), 0);
         $page->setConvertedUri(new Uri('/path/index.html'));
         try {
             chmod($this->runtimeFolder . '/web', 0000);
