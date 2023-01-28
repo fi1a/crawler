@@ -22,20 +22,28 @@ class PrepareHtmlPageTest extends TestCase
     {
         $prepare = new PrepareHtmlPage();
 
+        $preparePage = new Page(new Uri($this->getUrl('/path/to/index.html')));
+
+        $preparePage->setConvertedUri(new Uri('/path/to/index.html'));
+        $preparePage->setBody(file_get_contents(__DIR__ . '/../Fixtures/Server/public/path/to/index.html'));
+
         $pageCollection = new PageCollection();
 
-        $page = new Page(new Uri($this->getUrl('/link1.html')));
+        $page = new Page(new Uri($this->getUrl('/path/to/link1.html')));
         $pageCollection[] = $page;
 
-        $page = new Page(new Uri($this->getUrl('/link2.html')));
+        $page = new Page(new Uri($this->getUrl('/path/link2.html')));
         $pageCollection[] = $page;
 
-        $page = new Page(new Uri($this->getUrl('/link3.html')));
+        $page = new Page(new Uri($this->getUrl('/path/some/link3.html')));
+        $pageCollection[] = $page;
+
+        $page = new Page(new Uri($this->getUrl('/new/link4.html')));
         $pageCollection[] = $page;
 
         $this->assertEquals(
-            file_get_contents(__DIR__ . '/../Fixtures/Server/equals/index.html'),
-            $prepare->prepare($this->getPage(), $pageCollection)
+            file_get_contents(__DIR__ . '/../Fixtures/Server/equals/path/to/index.html'),
+            $prepare->prepare($preparePage, $pageCollection)
         );
     }
 }

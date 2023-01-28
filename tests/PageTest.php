@@ -87,6 +87,39 @@ class PageTest extends TestCase
     }
 
     /**
+     * Создание относительного uri
+     */
+    public function testRelativeUri(): void
+    {
+        $page = new Page(new Uri($this->getUrl('/path/to/index.html')));
+
+        $this->assertEquals(
+            'index.html',
+            $page->getRelativeUri(new Uri('/path/to/index.html'))->getUri()
+        );
+
+        $this->assertEquals(
+            '../path.html',
+            $page->getRelativeUri(new Uri('/path/path.html'))->getUri()
+        );
+
+        $this->assertEquals(
+            '../some/path.html',
+            $page->getRelativeUri(new Uri('/path/some/path.html'))->getUri()
+        );
+
+        $this->assertEquals(
+            '../../new/path.html',
+            $page->getRelativeUri(new Uri('/new/path.html'))->getUri()
+        );
+
+        $this->assertEquals(
+            '../../new/path.html',
+            $page->getRelativeUri(new Uri('../../new/path.html'))->getUri()
+        );
+    }
+
+    /**
      * Подготовленное тело ответа
      */
     public function testPrepareBody(): void

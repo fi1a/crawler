@@ -16,6 +16,7 @@ use Fi1a\Crawler\UriConverters\LocalUriConverter;
 use Fi1a\Crawler\UriConverters\UriConverterInterface;
 use Fi1a\Crawler\UriParsers\HtmlUriParser;
 use Fi1a\Crawler\UriParsers\UriParserInterface;
+use Fi1a\Crawler\Writers\WriterInterface;
 use Fi1a\Http\UriInterface;
 use Fi1a\HttpClient\HttpClient;
 use Fi1a\HttpClient\HttpClientInterface;
@@ -71,6 +72,11 @@ class Crawler implements CrawlerInterface
      */
     protected $preparePage;
 
+    /**
+     * @var WriterInterface|null
+     */
+    protected $writer;
+
     public function __construct(ConfigInterface $config)
     {
         $this->config = $config;
@@ -86,7 +92,7 @@ class Crawler implements CrawlerInterface
      */
     public function run(): void
     {
-        $this->validateConfig();
+        $this->validate();
         if (!count($this->restrictions)) {
             $this->addDefaultRestrictions();
         }
@@ -108,6 +114,7 @@ class Crawler implements CrawlerInterface
             if ($response->isSuccess()) {
                 $this->uriParse($page);
                 $this->preparePage($page);
+                $this->write($page);
             }
 
             $this->bypassedPages[] = $page;
@@ -193,6 +200,16 @@ class Crawler implements CrawlerInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function setWriter(WriterInterface $writer)
+    {
+        $this->writer = $writer;
+
+        return $this;
+    }
+
+    /**
      * Возвращатет mime тип для парсера uri
      */
     protected function getUriParserMime(?string $mime = null): string
@@ -254,10 +271,13 @@ class Crawler implements CrawlerInterface
     /**
      * Валидация конфига
      */
-    protected function validateConfig(): void
+    protected function validate(): void
     {
         if (!count($this->config->getStartUri())) {
             throw new InvalidArgumentException('Не задана точка входа ($config->addStartUrl())');
+        }
+        if (!$this->writer) {
+            throw new InvalidArgumentException('Не задан класс записывающий результат обхода');
         }
     }
 
@@ -327,6 +347,16 @@ class Crawler implements CrawlerInterface
     {
         if ($this->preparePage) {
             $page->setPrepareBody($this->preparePage->prepare($page, $this->pages));
+        }
+    }
+
+    /**
+     * Записывает результат обхода
+     */
+    protected function write(PageInterface $page): void
+    {
+        if ($this->writer) {
+            $this->writer->write($page);
         }
     }
 }

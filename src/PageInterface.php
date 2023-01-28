@@ -64,7 +64,7 @@ interface PageInterface
     public function setConvertedUri(UriInterface $uri);
 
     /**
-     * Вернуть  преобразованное Uri
+     * Вернуть преобразованное Uri
      */
     public function getConvertedUri(): ?UriInterface;
 
@@ -72,6 +72,11 @@ interface PageInterface
      * Возвращает абсолютный путь относительно страницы
      */
     public function getAbsoluteUri(UriInterface $uri): UriInterface;
+
+    /**
+     * Возвращает относительный путь относительно страницы
+     */
+    public function getRelativeUri(UriInterface $uri): UriInterface;
 
     /**
      * Установить подготовленное тело ответа

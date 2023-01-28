@@ -11,6 +11,7 @@ use Fi1a\Crawler\CrawlerInterface;
 use Fi1a\Crawler\Restrictions\NotAllowRestriction;
 use Fi1a\Crawler\UriCollection;
 use Fi1a\Crawler\UriParsers\HtmlUriParser;
+use Fi1a\Crawler\Writers\FileWriter;
 use Fi1a\Http\MimeInterface;
 use Fi1a\Unit\Crawler\TestCases\TestCase;
 use InvalidArgumentException;
@@ -40,16 +41,32 @@ class CrawlerTest extends TestCase
      */
     protected function getCrawler(): CrawlerInterface
     {
-        return new Crawler($this->getConfig());
+        $crawler = new Crawler($this->getConfig());
+
+        $crawler->setWriter(new FileWriter($this->runtimeFolder . '/web'));
+
+        return $crawler;
     }
 
     /**
      * Исключение если не задана точка входа
      */
-    public function testValidateConfigEmptyStartUrls(): void
+    public function testValidateEmptyStartUrls(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $config = new Config();
+        $crawler = new Crawler($config);
+        $crawler->run();
+    }
+
+    /**
+     * Исключение если не задан класс записывающий результат обхода
+     */
+    public function testValidateEmptyWriter(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $config = new Config();
+        $config->addStartUri($this->getUrl('/index.html'));
         $crawler = new Crawler($config);
         $crawler->run();
     }
