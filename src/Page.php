@@ -42,9 +42,15 @@ class Page implements PageInterface
      */
     protected $prepareBody;
 
-    public function __construct(UriInterface $uri)
+    /**
+     * @var int
+     */
+    protected $index;
+
+    public function __construct(UriInterface $uri, int $index)
     {
         $this->uri = $uri;
+        $this->index = $index;
     }
 
     /**
@@ -207,5 +213,13 @@ class Page implements PageInterface
     public function getPrepareBody()
     {
         return $this->prepareBody;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getIndex(): int
+    {
+        return $this->index;
     }
 }

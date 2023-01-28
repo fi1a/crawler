@@ -20,7 +20,7 @@ class PageTest extends TestCase
      */
     public function testUri(): void
     {
-        $page = new Page(new Uri($this->getUrl('/index.html')));
+        $page = new Page(new Uri($this->getUrl('/index.html')), 0);
 
         $this->assertInstanceOf(UriInterface::class, $page->getUri());
     }
@@ -30,7 +30,7 @@ class PageTest extends TestCase
      */
     public function testStatusCode(): void
     {
-        $page = new Page(new Uri($this->getUrl('/index.html')));
+        $page = new Page(new Uri($this->getUrl('/index.html')), 0);
 
         $this->assertNull($page->getStatusCode());
         $page->setStatusCode(200);
@@ -42,7 +42,7 @@ class PageTest extends TestCase
      */
     public function testBody(): void
     {
-        $page = new Page(new Uri($this->getUrl('/index.html')));
+        $page = new Page(new Uri($this->getUrl('/index.html')), 0);
 
         $this->assertNull($page->getBody());
         $page->setBody('body');
@@ -54,7 +54,7 @@ class PageTest extends TestCase
      */
     public function testContentType(): void
     {
-        $page = new Page(new Uri($this->getUrl('/index.html')));
+        $page = new Page(new Uri($this->getUrl('/index.html')), 0);
 
         $this->assertNull($page->getContentType());
         $page->setContentType(Mime::HTML);
@@ -66,7 +66,7 @@ class PageTest extends TestCase
      */
     public function testConvertedUri(): void
     {
-        $page = new Page(new Uri($this->getUrl('/index.html')));
+        $page = new Page(new Uri($this->getUrl('/index.html')), 0);
 
         $this->assertNull($page->getConvertedUri());
         $page->setConvertedUri(new Uri('/index.html'));
@@ -78,7 +78,7 @@ class PageTest extends TestCase
      */
     public function testAbsoluteUri(): void
     {
-        $page = new Page(new Uri($this->getUrl('/index.html')));
+        $page = new Page(new Uri($this->getUrl('/index.html')), 0);
 
         $this->assertEquals(
             'https://127.0.0.1:3000/some/path.html',
@@ -91,7 +91,7 @@ class PageTest extends TestCase
      */
     public function testAbsoluteUriFromRelative(): void
     {
-        $page = new Page(new Uri($this->getUrl('/some/path/index.php')));
+        $page = new Page(new Uri($this->getUrl('/some/path/index.php')), 0);
 
         $this->assertEquals(
             'https://127.0.0.1:3000/some/path.html',
@@ -109,7 +109,7 @@ class PageTest extends TestCase
      */
     public function testRelativeUri(): void
     {
-        $page = new Page(new Uri($this->getUrl('/path/to/index.html')));
+        $page = new Page(new Uri($this->getUrl('/path/to/index.html')), 0);
 
         $this->assertEquals(
             'index.html',
@@ -142,10 +142,20 @@ class PageTest extends TestCase
      */
     public function testPrepareBody(): void
     {
-        $page = new Page(new Uri($this->getUrl('/index.html')));
+        $page = new Page(new Uri($this->getUrl('/index.html')), 0);
 
         $this->assertNull($page->getPrepareBody());
         $page->setPrepareBody('body');
         $this->assertEquals('body', $page->getPrepareBody());
+    }
+
+    /**
+     * Место в очереди
+     */
+    public function testIndex(): void
+    {
+        $page = new Page(new Uri($this->getUrl('/index.html')), 1);
+
+        $this->assertEquals(1, $page->getIndex());
     }
 }

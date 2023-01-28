@@ -20,8 +20,8 @@ class PageCollectionTest extends TestCase
     public function testPageCollection(): void
     {
         $collection = new PageCollection();
-        $collection[] = new Page(new Uri('/index.html'));
-        $collection[] = new Page(new Uri('/link1.html'));
+        $collection[] = new Page(new Uri('/index.html'), 0);
+        $collection[] = new Page(new Uri('/link1.html'), 1);
         $this->assertCount(2, $collection);
     }
 }
