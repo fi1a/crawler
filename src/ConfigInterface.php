@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Fi1a\Crawler;
 
 use Fi1a\Collection\DataType\ValueObjectInterface;
+use Fi1a\Console\IO\OutputInterface;
 use Fi1a\Http\UriInterface;
 use Fi1a\HttpClient\ConfigInterface as HttpClientConfigInterface;
 
@@ -13,6 +14,16 @@ use Fi1a\HttpClient\ConfigInterface as HttpClientConfigInterface;
  */
 interface ConfigInterface extends ValueObjectInterface
 {
+    public const VERBOSE_NONE = OutputInterface::VERBOSE_NONE;
+
+    public const VERBOSE_NORMAL = OutputInterface::VERBOSE_NORMAL;
+
+    public const VERBOSE_HIGHT = OutputInterface::VERBOSE_HIGHT;
+
+    public const VERBOSE_HIGHTEST = OutputInterface::VERBOSE_HIGHTEST;
+
+    public const VERBOSE_DEBUG = OutputInterface::VERBOSE_DEBUG;
+
     /**
      * Добавить точку входа, с которой начинается обход
      *
@@ -38,4 +49,16 @@ interface ConfigInterface extends ValueObjectInterface
      * Возвращает конфигурацию http-клиента
      */
     public function getHttpClientConfig(): HttpClientConfigInterface;
+
+    /**
+     * Установить уровень подробности вывода
+     *
+     * @return $this
+     */
+    public function setVerbose(int $verbose);
+
+    /**
+     * Вернуть уровень подробности вывода
+     */
+    public function getVerbose(): int;
 }

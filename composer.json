@@ -18,6 +18,7 @@
     "fi1a/http": "dev-main",
     "fi1a/http-client": "dev-main",
     "fi1a/simplequery": "^2.0",
+    "fi1a/console": "^2.1",
     "ext-dom": "*"
   },
   "suggest": {
