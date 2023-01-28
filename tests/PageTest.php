@@ -87,6 +87,24 @@ class PageTest extends TestCase
     }
 
     /**
+     * Возвращает абсолютный uri
+     */
+    public function testAbsoluteUriFromRelative(): void
+    {
+        $page = new Page(new Uri($this->getUrl('/some/path/index.php')));
+
+        $this->assertEquals(
+            'https://127.0.0.1:3000/some/path.html',
+            $page->getAbsoluteUri(new Uri('../path.html'))->getUri()
+        );
+
+        $this->assertEquals(
+            'https://127.0.0.1:3000/path.html',
+            $page->getAbsoluteUri(new Uri('../../path.html'))->getUri()
+        );
+    }
+
+    /**
      * Создание относительного uri
      */
     public function testRelativeUri(): void

@@ -408,6 +408,13 @@ class Crawler implements CrawlerInterface
             /** @var RestrictionInterface $restriction */
             foreach ($this->restrictions as $restriction) {
                 if (!$restriction->isAllow($uri)) {
+                    $this->output->writeln(
+                        '        <color=blue>- Запрещен обход для этого адреса</>',
+                        [],
+                        null,
+                        OutputInterface::VERBOSE_HIGHTEST
+                    );
+
                     break 2;
                 }
             }

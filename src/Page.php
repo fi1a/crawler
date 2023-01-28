@@ -138,7 +138,24 @@ class Page implements PageInterface
                 ->withPort($this->getUri()->getPort());
         }
         if (mb_substr($uri->getPath(), 0, 1) !== '/') {
-            $uri = $uri->withPath($this->getUri()->getNormalizedBasePath() . $uri->getPath());
+            $tokens = [];
+            $parts = explode('/', $this->getUri()->getNormalizedBasePath() . $uri->getPath());
+            foreach ($parts as $part) {
+                if (!$part) {
+                    continue;
+                }
+                if ($part === '.' || $part === '..') {
+                    if ($part === '..' && count($tokens) !== 0) {
+                        array_pop($tokens);
+                    }
+
+                    continue;
+                }
+
+                $tokens[] = $part;
+            }
+
+            $uri = $uri->withPath('/' . implode('/', $tokens));
         }
 
         return $uri;
