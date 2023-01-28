@@ -55,4 +55,37 @@ interface PageInterface
      * Вернуть тип контента
      */
     public function getContentType(): ?string;
+
+    /**
+     * Установить преобразованное Uri
+     *
+     * @return $this
+     */
+    public function setConvertedUri(UriInterface $uri);
+
+    /**
+     * Вернуть  преобразованное Uri
+     */
+    public function getConvertedUri(): ?UriInterface;
+
+    /**
+     * Возвращает абсолютный путь относительно страницы
+     */
+    public function getAbsoluteUri(UriInterface $uri): UriInterface;
+
+    /**
+     * Установить подготовленное тело ответа
+     *
+     * @param mixed $body
+     *
+     * @return $this
+     */
+    public function setPrepareBody($body);
+
+    /**
+     * Вернуть подготовленное тело ответа
+     *
+     * @return mixed
+     */
+    public function getPrepareBody();
 }

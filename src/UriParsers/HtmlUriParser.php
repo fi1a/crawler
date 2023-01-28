@@ -24,11 +24,9 @@ class HtmlUriParser implements UriParserInterface
         $collection = new UriCollection();
 
         $sq = new SimpleQuery((string) $page->getBody());
-        /** @psalm-suppress TooManyArguments */
         $links = $sq('a');
         /** @var \DOMElement $link */
         foreach ($links as $link) {
-            /** @psalm-suppress TooManyArguments */
             $href = (string) $sq($link)->attr('href');
             if (!$href) {
                 continue;
