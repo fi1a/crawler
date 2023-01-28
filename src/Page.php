@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Fi1a\Crawler;
 
+use Fi1a\Http\Uri;
 use Fi1a\Http\UriInterface;
 
 /**
@@ -141,6 +142,36 @@ class Page implements PageInterface
         }
 
         return $uri;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getRelativeUri(UriInterface $uri): UriInterface
+    {
+        $absoluteUri = $this->getAbsoluteUri($uri)
+            ->withHost('')
+            ->withPort(null);
+
+        $parts = array_filter(explode('/', $this->getUri()->getNormalizedBasePath()));
+        $partIndex = 1;
+        $checkPart = '';
+
+        do {
+            $sharePart = $checkPart;
+            $checkPart = '/' . implode('/', array_slice($parts, 0, $partIndex)) . '/';
+            $loop = count($parts) >= $partIndex && mb_stripos($absoluteUri->getNormalizedBasePath(), $checkPart) === 0;
+            if ($loop) {
+                $partIndex++;
+            }
+        } while ($loop);
+
+        $upIndex = count($parts) - ($partIndex - 1);
+
+        $relativeUri = str_repeat('../', $upIndex)
+            . ltrim(mb_substr($absoluteUri->getUri(), mb_strlen($sharePart)), '/');
+
+        return new Uri($relativeUri);
     }
 
     /**

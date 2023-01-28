@@ -35,21 +35,15 @@ class PrepareHtmlPage implements PreparePageInterface
                 continue;
             }
 
-            $uri = $page->getAbsoluteUri($uri);
+            $absoluteUri = $page->getAbsoluteUri($uri);
 
-            if ($uri->getHost() !== $page->getUri()->getHost()) {
+            if ($absoluteUri->getHost() !== $page->getUri()->getHost()) {
                 continue;
             }
 
-            $uri = $uri->withHost('')
-                ->withPort(null);
+            $relativeUri = $page->getRelativeUri($uri);
 
-            $sq($link)->attr(
-                'href',
-                $uri->withHost('')
-                    ->withPort(null)
-                    ->getUri()
-            );
+            $sq($link)->attr('href', $relativeUri->getUri());
         }
 
         return (string) $sq;

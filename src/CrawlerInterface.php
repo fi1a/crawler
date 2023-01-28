@@ -9,6 +9,7 @@ use Fi1a\Crawler\Restrictions\RestrictionCollectionInterface;
 use Fi1a\Crawler\Restrictions\RestrictionInterface;
 use Fi1a\Crawler\UriConverters\UriConverterInterface;
 use Fi1a\Crawler\UriParsers\UriParserInterface;
+use Fi1a\Crawler\Writers\WriterInterface;
 
 /**
  * Web Crawler
@@ -71,4 +72,11 @@ interface CrawlerInterface
      * @return $this
      */
     public function setPreparePage(PreparePageInterface $preparePage);
+
+    /**
+     * Установить класс записывающий результат обхода
+     *
+     * @return $this
+     */
+    public function setWriter(WriterInterface $writer);
 }
