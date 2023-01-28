@@ -6,6 +6,12 @@ namespace Fi1a\Crawler;
 
 use Fi1a\Collection\Queue;
 use Fi1a\Collection\QueueInterface;
+use Fi1a\Console\Component\ProgressbarComponent\ProgressbarComponent;
+use Fi1a\Console\Component\ProgressbarComponent\ProgressbarStyle;
+use Fi1a\Console\IO\ConsoleOutput;
+use Fi1a\Console\IO\ConsoleOutputInterface;
+use Fi1a\Console\IO\Formatter;
+use Fi1a\Console\IO\OutputInterface;
 use Fi1a\Crawler\PreparePage\PrepareHtmlPage;
 use Fi1a\Crawler\PreparePage\PreparePageInterface;
 use Fi1a\Crawler\Restrictions\RestrictionCollection;
@@ -77,7 +83,17 @@ class Crawler implements CrawlerInterface
      */
     protected $writer;
 
-    public function __construct(ConfigInterface $config)
+    /**
+     * @var ConsoleOutputInterface
+     */
+    protected $output;
+
+    /**
+     * @var int
+     */
+    protected $count = 0;
+
+    public function __construct(ConfigInterface $config, ?ConsoleOutputInterface $output = null)
     {
         $this->config = $config;
         $this->restrictions = new RestrictionCollection();
@@ -85,6 +101,10 @@ class Crawler implements CrawlerInterface
         $this->bypassedPages = new PageCollection();
         $this->pages = new PageCollection();
         $this->httpClient = new HttpClient($this->config->getHttpClientConfig());
+        if ($output === null) {
+            $output = new ConsoleOutput(new Formatter());
+        }
+        $this->output = $output;
     }
 
     /**
@@ -93,6 +113,7 @@ class Crawler implements CrawlerInterface
     public function run(): void
     {
         $this->validate();
+        $this->output->setVerbose($this->config->getVerbose());
         if (!count($this->restrictions)) {
             $this->addDefaultRestrictions();
         }
@@ -101,9 +122,19 @@ class Crawler implements CrawlerInterface
         $this->addDefaultPreparePage();
         $this->initStartUri();
 
+        $progressbarStyle = new ProgressbarStyle();
+        $progressbarStyle->setTemplateByName('full');
+        $progressbar = new ProgressbarComponent($this->output, $progressbarStyle);
+
+        $progressbar->start($this->count);
+        $progressbar->display();
+
+        $index = 0;
+
         /** @psalm-suppress MixedAssignment */
         while ($page = $this->queue->pollBegin()) {
             assert($page instanceof PageInterface);
+            $index++;
 
             $response = $this->httpClient->get($page->getUri());
 
@@ -111,14 +142,37 @@ class Crawler implements CrawlerInterface
                 ->setContentType($response->getBody()->getContentType())
                 ->setBody($response->getBody()->get());
 
+            if ($this->output->getVerbose() >= OutputInterface::VERBOSE_HIGHT) {
+                $progressbar->clear();
+            }
+
+            $this->output->writeln(
+                '{{}}/{{}} <color=green>Обработка uri {{|unescape}}</>',
+                [
+                    $index,
+                    $this->count,
+                    $page->getUri()->getUri(),
+                ],
+                null,
+                OutputInterface::VERBOSE_HIGHT
+            );
+
             if ($response->isSuccess()) {
                 $this->uriParse($page);
                 $this->preparePage($page);
                 $this->write($page);
             }
 
+            $progressbar->setMaxSteps($this->count);
+            $progressbar->increment();
+            $progressbar->display();
+
             $this->bypassedPages[] = $page;
         }
+
+        $progressbar->finish();
+        $this->output->writeln();
+        $this->output->writeln();
     }
 
     /**
@@ -286,8 +340,15 @@ class Crawler implements CrawlerInterface
      */
     protected function initStartUri(): void
     {
-        foreach ($this->config->getStartUri() as $startUrl) {
-            $this->addPage($startUrl);
+        foreach ($this->config->getStartUri() as $startUri) {
+            $this->output->writeln(
+                '    Получен uri {{|unescape}}',
+                [$startUri->getUri()],
+                null,
+                OutputInterface::VERBOSE_HIGHTEST
+            );
+
+            $this->addPage($startUri);
         }
     }
 
@@ -300,6 +361,13 @@ class Crawler implements CrawlerInterface
             return;
         }
 
+        $this->output->writeln(
+            '        <color=yellow>+ Добавлен в очередь</>',
+            [],
+            null,
+            OutputInterface::VERBOSE_HIGHTEST
+        );
+
         $page = new Page($uri);
 
         $page->setConvertedUri($uri);
@@ -309,6 +377,7 @@ class Crawler implements CrawlerInterface
 
         $this->queue->addEnd($page);
         $this->pages[$uri->getUri()] = $page;
+        $this->count++;
     }
 
     /**
@@ -328,6 +397,13 @@ class Crawler implements CrawlerInterface
         /** @var UriInterface $uri */
         foreach ($collection as $uri) {
             $uri = $page->getAbsoluteUri($uri);
+
+            $this->output->writeln(
+                '    Получен uri {{|unescape}}',
+                [$uri->getUri()],
+                null,
+                OutputInterface::VERBOSE_HIGHTEST
+            );
 
             /** @var RestrictionInterface $restriction */
             foreach ($this->restrictions as $restriction) {

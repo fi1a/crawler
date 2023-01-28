@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Fi1a\Unit\Crawler;
 
+use Fi1a\Console\IO\ConsoleOutput;
+use Fi1a\Console\IO\Formatter;
+use Fi1a\Console\IO\Stream;
 use Fi1a\Crawler\Config;
 use Fi1a\Crawler\ConfigInterface;
 use Fi1a\Crawler\Crawler;
@@ -30,6 +33,7 @@ class CrawlerTest extends TestCase
 
         $config->addStartUri($this->getUrl('/index.html'));
         $config->addStartUri($this->getUrl('/link1.html'));
+        $config->setVerbose(ConfigInterface::VERBOSE_NONE);
 
         $config->getHttpClientConfig()->setSslVerify(false);
 
@@ -77,6 +81,23 @@ class CrawlerTest extends TestCase
     public function testDefault(): void
     {
         $crawler = $this->getCrawler();
+
+        $crawler->run();
+        $this->assertCount(1, $crawler->getRestrictions());
+        $this->assertTrue($crawler->hasUriParser());
+    }
+
+    /**
+     * Web Crawler
+     */
+    public function testDefaultOutputMemory(): void
+    {
+        $config = $this->getConfig();
+        $config->setVerbose(ConfigInterface::VERBOSE_DEBUG);
+        $output = new ConsoleOutput(new Formatter());
+        $output->setStream(new Stream('php://memory'));
+        $crawler = new Crawler($config, $output);
+        $crawler->setWriter(new FileWriter($this->runtimeFolder . '/web'));
 
         $crawler->run();
         $this->assertCount(1, $crawler->getRestrictions());

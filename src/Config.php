@@ -16,7 +16,7 @@ use InvalidArgumentException;
  */
 class Config extends ValueObject implements ConfigInterface
 {
-    protected $modelKeys = ['startUri', 'httpClientConfig'];
+    protected $modelKeys = ['startUri', 'httpClientConfig', 'verbose'];
 
     /**
      * @inheritDoc
@@ -26,6 +26,7 @@ class Config extends ValueObject implements ConfigInterface
         return [
             'startUri' => [],
             'httpClientConfig' => new HttpClientConfig(),
+            'verbose' => self::VERBOSE_NORMAL,
         ];
     }
 
@@ -77,5 +78,29 @@ class Config extends ValueObject implements ConfigInterface
         $config = $this->modelGet('httpClientConfig');
 
         return $config;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setVerbose(int $verbose)
+    {
+        if ($verbose < self::VERBOSE_NONE || $verbose > self::VERBOSE_DEBUG) {
+            throw new InvalidArgumentException(
+                sprintf('Передано ошибочное значение "%d" в качестве аргумента', $verbose)
+            );
+        }
+
+        $this->modelSet('verbose', $verbose);
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getVerbose(): int
+    {
+        return (int) $this->modelGet('verbose');
     }
 }
