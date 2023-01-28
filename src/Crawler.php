@@ -6,10 +6,14 @@ namespace Fi1a\Crawler;
 
 use Fi1a\Collection\Queue;
 use Fi1a\Collection\QueueInterface;
+use Fi1a\Crawler\PreparePage\PrepareHtmlPage;
+use Fi1a\Crawler\PreparePage\PreparePageInterface;
 use Fi1a\Crawler\Restrictions\RestrictionCollection;
 use Fi1a\Crawler\Restrictions\RestrictionCollectionInterface;
 use Fi1a\Crawler\Restrictions\RestrictionInterface;
 use Fi1a\Crawler\Restrictions\UriRestriction;
+use Fi1a\Crawler\UriConverters\LocalUriConverter;
+use Fi1a\Crawler\UriConverters\UriConverterInterface;
 use Fi1a\Crawler\UriParsers\HtmlUriParser;
 use Fi1a\Crawler\UriParsers\UriParserInterface;
 use Fi1a\Http\UriInterface;
@@ -57,6 +61,16 @@ class Crawler implements CrawlerInterface
      */
     protected $pages;
 
+    /**
+     * @var UriConverterInterface|null
+     */
+    protected $uriConverter;
+
+    /**
+     * @var PreparePageInterface|null
+     */
+    protected $preparePage;
+
     public function __construct(ConfigInterface $config)
     {
         $this->config = $config;
@@ -77,6 +91,8 @@ class Crawler implements CrawlerInterface
             $this->addDefaultRestrictions();
         }
         $this->addDefaultUriParser();
+        $this->addDefaultUriConverter();
+        $this->addDefaultPreparePage();
         $this->initStartUri();
 
         /** @psalm-suppress MixedAssignment */
@@ -91,6 +107,7 @@ class Crawler implements CrawlerInterface
 
             if ($response->isSuccess()) {
                 $this->uriParse($page);
+                $this->preparePage($page);
             }
 
             $this->bypassedPages[] = $page;
@@ -156,6 +173,26 @@ class Crawler implements CrawlerInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function setUriConverter(UriConverterInterface $uriConverter)
+    {
+        $this->uriConverter = $uriConverter;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setPreparePage(PreparePageInterface $preparePage)
+    {
+        $this->preparePage = $preparePage;
+
+        return $this;
+    }
+
+    /**
      * Возвращатет mime тип для парсера uri
      */
     protected function getUriParserMime(?string $mime = null): string
@@ -174,8 +211,7 @@ class Crawler implements CrawlerInterface
     {
         $existing = [];
         foreach ($this->config->getStartUri() as $startUrl) {
-            $uri = clone $startUrl;
-            $uri->replace($startUrl->getNormalizedBasePath());
+            $uri = $startUrl->replace($startUrl->getNormalizedBasePath());
             if (in_array($uri->getUrl(), $existing)) {
                 continue;
             }
@@ -192,6 +228,26 @@ class Crawler implements CrawlerInterface
     {
         if (!$this->hasUriParser()) {
             $this->setUriParser(new HtmlUriParser());
+        }
+    }
+
+    /**
+     * Добавить преобразователь адресов из внешних во внутренние используемый по умолчанию
+     */
+    protected function addDefaultUriConverter(): void
+    {
+        if (!$this->uriConverter) {
+            $this->setUriConverter(new LocalUriConverter());
+        }
+    }
+
+    /**
+     * Добавить класс подготавливающий страницу
+     */
+    protected function addDefaultPreparePage(): void
+    {
+        if (!$this->preparePage) {
+            $this->setPreparePage(new PrepareHtmlPage());
         }
     }
 
@@ -225,6 +281,12 @@ class Crawler implements CrawlerInterface
         }
 
         $page = new Page($uri);
+
+        $page->setConvertedUri($uri);
+        if ($this->uriConverter) {
+            $page->setConvertedUri($this->uriConverter->convert($page));
+        }
+
         $this->queue->addEnd($page);
         $this->pages[$uri->getUri()] = $page;
     }
@@ -245,14 +307,7 @@ class Crawler implements CrawlerInterface
         $collection = $parser->parse($page);
         /** @var UriInterface $uri */
         foreach ($collection as $uri) {
-            if (!$uri->getHost()) {
-                $uri = $uri->withScheme($page->getUri()->getScheme())
-                    ->withHost($page->getUri()->getHost())
-                    ->withPort($page->getUri()->getPort());
-            }
-            if (mb_substr($uri->getPath(), 0, 1) !== '/') {
-                $uri = $uri->withPath($page->getUri()->getNormalizedBasePath() . $uri->getPath());
-            }
+            $uri = $page->getAbsoluteUri($uri);
 
             /** @var RestrictionInterface $restriction */
             foreach ($this->restrictions as $restriction) {
@@ -262,6 +317,16 @@ class Crawler implements CrawlerInterface
             }
 
             $this->addPage($uri);
+        }
+    }
+
+    /**
+     * Подготавливает страницу
+     */
+    protected function preparePage(PageInterface $page): void
+    {
+        if ($this->preparePage) {
+            $page->setPrepareBody($this->preparePage->prepare($page, $this->pages));
         }
     }
 }

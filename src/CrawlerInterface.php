@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Fi1a\Crawler;
 
+use Fi1a\Crawler\PreparePage\PreparePageInterface;
 use Fi1a\Crawler\Restrictions\RestrictionCollectionInterface;
 use Fi1a\Crawler\Restrictions\RestrictionInterface;
+use Fi1a\Crawler\UriConverters\UriConverterInterface;
 use Fi1a\Crawler\UriParsers\UriParserInterface;
 
 /**
@@ -55,4 +57,18 @@ interface CrawlerInterface
      * @return $this
      */
     public function removeUriParser(?string $mime = null);
+
+    /**
+     * Установить класс преобразователь адресов из внешних во внутренние
+     *
+     * @return $this
+     */
+    public function setUriConverter(UriConverterInterface $uriConverter);
+
+    /**
+     * Установить класс подготавливающий страницу
+     *
+     * @return $this
+     */
+    public function setPreparePage(PreparePageInterface $preparePage);
 }
