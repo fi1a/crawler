@@ -90,4 +90,15 @@ class ConfigTest extends TestCase
         $config->setLogChannel('channel1');
         $this->assertEquals('channel1', $config->getLogChannel());
     }
+
+    /**
+     * Путь до папки с мета данными
+     */
+    public function testMetaDataPath(): void
+    {
+        $config = new Config();
+        $this->assertIsString($config->getMetaDataPath());
+        $config->setMetaDataPath('/path/');
+        $this->assertEquals('/path/', $config->getMetaDataPath());
+    }
 }

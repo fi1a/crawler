@@ -112,7 +112,7 @@ class CrawlerTest extends TestCase
         $crawler = $this->getCrawler();
 
         $crawler->run();
-        $this->assertCount(4, $crawler->getBypassedPages());
+        $this->assertCount(4, $crawler->getBypassedItems());
     }
 
     /**

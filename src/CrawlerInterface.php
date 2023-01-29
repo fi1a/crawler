@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Fi1a\Crawler;
 
-use Fi1a\Crawler\PreparePage\PreparePageInterface;
+use Fi1a\Crawler\PrepareItem\PrepareItemInterface;
 use Fi1a\Crawler\Restrictions\RestrictionCollectionInterface;
 use Fi1a\Crawler\Restrictions\RestrictionInterface;
 use Fi1a\Crawler\UriConverters\UriConverterInterface;
@@ -38,7 +38,7 @@ interface CrawlerInterface
     /**
      * Возвращает обойденные адреса
      */
-    public function getBypassedPages(): PageCollectionInterface;
+    public function getBypassedItems(): ItemCollectionInterface;
 
     /**
      * Устанавливает парсер uri для обхода (в зависимости от типа контента)
@@ -67,11 +67,11 @@ interface CrawlerInterface
     public function setUriConverter(UriConverterInterface $uriConverter);
 
     /**
-     * Установить класс подготавливающий страницу
+     * Установить класс подготавливающий элемент
      *
      * @return $this
      */
-    public function setPreparePage(PreparePageInterface $preparePage);
+    public function setPrepareItem(PrepareItemInterface $prepareItem);
 
     /**
      * Установить класс записывающий результат обхода

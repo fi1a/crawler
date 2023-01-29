@@ -9,7 +9,7 @@ use Fi1a\Http\Uri;
 use Fi1a\Unit\Crawler\TestCases\TestCase;
 
 /**
- * Запрет на обход страниц
+ * Запрет на обход элементов
  */
 class NotAllowRestrictionTest extends TestCase
 {

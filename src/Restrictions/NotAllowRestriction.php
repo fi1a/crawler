@@ -7,7 +7,7 @@ namespace Fi1a\Crawler\Restrictions;
 use Fi1a\Http\UriInterface;
 
 /**
- * Запрет на обход страниц
+ * Запрет на обход
  */
 class NotAllowRestriction implements RestrictionInterface
 {

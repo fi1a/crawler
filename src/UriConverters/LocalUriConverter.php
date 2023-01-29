@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Fi1a\Crawler\UriConverters;
 
-use Fi1a\Crawler\PageInterface;
+use Fi1a\Crawler\ItemInterface;
 use Fi1a\Http\UriInterface;
 
 /**
@@ -15,9 +15,9 @@ class LocalUriConverter implements UriConverterInterface
     /**
      * @inheritDoc
      */
-    public function convert(PageInterface $page): UriInterface
+    public function convert(ItemInterface $item): UriInterface
     {
-        return $page->getUri()
+        return $item->getUri()
             ->withHost('')
             ->withPort(null);
     }

@@ -73,4 +73,16 @@ interface ConfigInterface extends ValueObjectInterface
      * Вернуть канал логирования
      */
     public function getLogChannel(): string;
+
+    /**
+     * Установить путь до папки с мета данными
+     *
+     * @return $this
+     */
+    public function setMetaDataPath(string $path);
+
+    /**
+     * Вернуть путь до папки с мета данными
+     */
+    public function getMetaDataPath(): string;
 }

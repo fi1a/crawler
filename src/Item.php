@@ -8,9 +8,9 @@ use Fi1a\Http\Uri;
 use Fi1a\Http\UriInterface;
 
 /**
- * Страница
+ * Элемент
  */
-class Page implements PageInterface
+class Item implements ItemInterface
 {
     /**
      * @var UriInterface

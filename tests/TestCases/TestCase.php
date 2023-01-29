@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Fi1a\Unit\Crawler\TestCases;
 
-use Fi1a\Crawler\Page;
-use Fi1a\Crawler\PageInterface;
+use Fi1a\Crawler\Item;
+use Fi1a\Crawler\ItemInterface;
 use Fi1a\Http\Uri;
 use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 use RecursiveDirectoryIterator;
@@ -55,16 +55,16 @@ class TestCase extends PHPUnitTestCase
     }
 
     /**
-     * Возвращает страницу
+     * Возвращает элемент
      */
-    protected function getPage(): PageInterface
+    protected function getItem(): ItemInterface
     {
-        $page = new Page(new Uri($this->getUrl('/index.html')), 0);
+        $item = new Item(new Uri($this->getUrl('/index.html')), 0);
 
-        $page->setConvertedUri(new Uri('/index.html'));
-        $page->setBody(file_get_contents(__DIR__ . '/../Fixtures/Server/public/index.html'));
-        $page->setPrepareBody(file_get_contents(__DIR__ . '/../Fixtures/Server/equals/index.html'));
+        $item->setConvertedUri(new Uri('/index.html'));
+        $item->setBody(file_get_contents(__DIR__ . '/../Fixtures/Server/public/index.html'));
+        $item->setPrepareBody(file_get_contents(__DIR__ . '/../Fixtures/Server/equals/index.html'));
 
-        return $page;
+        return $item;
     }
 }

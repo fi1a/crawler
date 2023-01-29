@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Fi1a\Unit\Crawler\Writers;
 
 use ErrorException;
-use Fi1a\Crawler\Page;
+use Fi1a\Crawler\Item;
 use Fi1a\Crawler\Writers\FileWriter;
 use Fi1a\Http\Uri;
 use Fi1a\Unit\Crawler\TestCases\TestCase;
@@ -27,7 +27,7 @@ class FileWriterTest extends TestCase
             ->getMock();
 
         $writer->expects($this->once())->method('doWrite')->willReturn(100);
-        $this->assertTrue($writer->write($this->getPage()));
+        $this->assertTrue($writer->write($this->getItem()));
     }
 
     /**
@@ -41,7 +41,7 @@ class FileWriterTest extends TestCase
             ->getMock();
 
         $writer->expects($this->once())->method('doWrite')->willReturn(false);
-        $this->assertFalse($writer->write($this->getPage()));
+        $this->assertFalse($writer->write($this->getItem()));
     }
 
     /**
@@ -92,9 +92,9 @@ class FileWriterTest extends TestCase
     public function testNotConvertedUri(): void
     {
         $this->expectException(ErrorException::class);
-        $page = new Page(new Uri($this->getUrl('/index.html')), 0);
+        $item = new Item(new Uri($this->getUrl('/index.html')), 0);
         $writer = new FileWriter($this->runtimeFolder . '/web');
-        $this->assertFalse($writer->write($page));
+        $this->assertFalse($writer->write($item));
     }
 
     /**
@@ -104,11 +104,11 @@ class FileWriterTest extends TestCase
     {
         $this->expectException(ErrorException::class);
         $writer = new FileWriter($this->runtimeFolder . '/web');
-        $page = new Page(new Uri($this->getUrl('/path/index.html')), 0);
-        $page->setConvertedUri(new Uri('/path/index.html'));
+        $item = new Item(new Uri($this->getUrl('/path/index.html')), 0);
+        $item->setConvertedUri(new Uri('/path/index.html'));
         try {
             chmod($this->runtimeFolder . '/web', 0000);
-            $writer->write($page);
+            $writer->write($item);
         } catch (ErrorException $exception) {
             chmod($this->runtimeFolder . '/web', 0777);
 
