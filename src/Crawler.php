@@ -13,8 +13,8 @@ use Fi1a\Console\IO\ConsoleOutput;
 use Fi1a\Console\IO\ConsoleOutputInterface;
 use Fi1a\Console\IO\Formatter;
 use Fi1a\Console\IO\OutputInterface;
-use Fi1a\Crawler\PreparePage\PrepareHtmlPage;
-use Fi1a\Crawler\PreparePage\PreparePageInterface;
+use Fi1a\Crawler\PrepareItem\PrepareHtmlItem;
+use Fi1a\Crawler\PrepareItem\PrepareItemInterface;
 use Fi1a\Crawler\Restrictions\RestrictionCollection;
 use Fi1a\Crawler\Restrictions\RestrictionCollectionInterface;
 use Fi1a\Crawler\Restrictions\RestrictionInterface;
@@ -52,9 +52,9 @@ class Crawler implements CrawlerInterface
     protected $queue;
 
     /**
-     * @var PageCollectionInterface
+     * @var ItemCollectionInterface
      */
-    protected $bypassedPages;
+    protected $bypassedItems;
 
     /**
      * @var HttpClientInterface
@@ -67,9 +67,9 @@ class Crawler implements CrawlerInterface
     protected $uriParsers = [];
 
     /**
-     * @var PageCollectionInterface
+     * @var ItemCollectionInterface
      */
-    protected $pages;
+    protected $items;
 
     /**
      * @var UriConverterInterface|null
@@ -77,9 +77,9 @@ class Crawler implements CrawlerInterface
     protected $uriConverter;
 
     /**
-     * @var PreparePageInterface|null
+     * @var PrepareItemInterface|null
      */
-    protected $preparePage;
+    protected $prepareItem;
 
     /**
      * @var WriterInterface|null
@@ -115,8 +115,8 @@ class Crawler implements CrawlerInterface
         $this->config = $config;
         $this->restrictions = new RestrictionCollection();
         $this->queue = new Queue();
-        $this->bypassedPages = new PageCollection();
-        $this->pages = new PageCollection();
+        $this->bypassedItems = new ItemCollection();
+        $this->items = new ItemCollection();
         $this->httpClient = new HttpClient($this->config->getHttpClientConfig());
         if ($output === null) {
             $output = new ConsoleOutput(new Formatter());
@@ -144,7 +144,7 @@ class Crawler implements CrawlerInterface
         }
         $this->addDefaultUriParser();
         $this->addDefaultUriConverter();
-        $this->addDefaultPreparePage();
+        $this->addDefaultPrepareItem();
         $runId = uniqid();
         $this->logger->withContext(['runId' => $runId]);
         $this->logger->info('Запуск обхода');
@@ -159,9 +159,9 @@ class Crawler implements CrawlerInterface
         $this->progressbar->display();
 
         /** @psalm-suppress MixedAssignment */
-        while ($page = $this->queue->pollBegin()) {
-            assert($page instanceof PageInterface);
-            $this->processPage($page);
+        while ($item = $this->queue->pollBegin()) {
+            assert($item instanceof ItemInterface);
+            $this->processItem($item);
         }
 
         $this->progressbar->finish();
@@ -192,9 +192,9 @@ class Crawler implements CrawlerInterface
     /**
      * @inheritDoc
      */
-    public function getBypassedPages(): PageCollectionInterface
+    public function getBypassedItems(): ItemCollectionInterface
     {
-        return $this->bypassedPages;
+        return $this->bypassedItems;
     }
 
     /**
@@ -242,9 +242,9 @@ class Crawler implements CrawlerInterface
     /**
      * @inheritDoc
      */
-    public function setPreparePage(PreparePageInterface $preparePage)
+    public function setPrepareItem(PrepareItemInterface $prepareItem)
     {
-        $this->preparePage = $preparePage;
+        $this->prepareItem = $prepareItem;
 
         return $this;
     }
@@ -309,12 +309,12 @@ class Crawler implements CrawlerInterface
     }
 
     /**
-     * Добавить класс подготавливающий страницу
+     * Добавить класс подготавливающий элемент
      */
-    protected function addDefaultPreparePage(): void
+    protected function addDefaultPrepareItem(): void
     {
-        if (!$this->preparePage) {
-            $this->setPreparePage(new PrepareHtmlPage());
+        if (!$this->prepareItem) {
+            $this->setPrepareItem(new PrepareHtmlItem());
         }
     }
 
@@ -350,16 +350,16 @@ class Crawler implements CrawlerInterface
                 OutputInterface::VERBOSE_HIGHTEST
             );
 
-            $this->addPage($startUri);
+            $this->addItem($startUri);
         }
     }
 
     /**
-     * Добавляет страницу, если ее нет
+     * Добавляет элемент, если его нет
      */
-    protected function addPage(UriInterface $uri): void
+    protected function addItem(UriInterface $uri): void
     {
-        if ($this->pages->has($uri->getUri())) {
+        if ($this->items->has($uri->getUri())) {
             return;
         }
 
@@ -377,15 +377,15 @@ class Crawler implements CrawlerInterface
         );
 
         $this->count++;
-        $page = new Page($uri, $this->count);
+        $item = new Item($uri, $this->count);
 
-        $page->setConvertedUri($uri);
+        $item->setConvertedUri($uri);
         if ($this->uriConverter) {
-            $page->setConvertedUri($this->uriConverter->convert($page));
+            $item->setConvertedUri($this->uriConverter->convert($item));
         }
 
-        $this->queue->addEnd($page);
-        $this->pages[$uri->getUri()] = $page;
+        $this->queue->addEnd($item);
+        $this->items[$uri->getUri()] = $item;
     }
 
     /**
@@ -393,18 +393,18 @@ class Crawler implements CrawlerInterface
      *
      * @param mixed $body
      */
-    protected function uriParse(PageInterface $page): void
+    protected function uriParse(ItemInterface $item): void
     {
         $parser = $this->uriParsers[$this->getUriParserMime()];
-        $mime = $page->getContentType();
+        $mime = $item->getContentType();
         if ($mime && $this->hasUriParser($mime)) {
             $parser = $this->uriParsers[$this->getUriParserMime($mime)];
         }
 
-        $collection = $parser->parse($page);
+        $collection = $parser->parse($item);
         /** @var UriInterface $uri */
         foreach ($collection as $uri) {
-            $uri = $page->getAbsoluteUri($uri);
+            $uri = $item->getAbsoluteUri($uri);
 
             $this->output->writeln(
                 '    Получен uri {{|unescape}}',
@@ -414,10 +414,10 @@ class Crawler implements CrawlerInterface
             );
 
             $this->logger->debug(
-                'Получен uri {{uri}} со страницы {{pageUri}}',
+                'Получен uri {{uri}} из {{itemUri}}',
                 [
                     'uri' => $uri->getUri(),
-                    'pageUri' => $page->getUri()->getUri(),
+                    'itemUri' => $item->getUri()->getUri(),
                 ]
             );
 
@@ -441,47 +441,47 @@ class Crawler implements CrawlerInterface
                 }
             }
 
-            $this->addPage($uri);
+            $this->addItem($uri);
         }
     }
 
     /**
-     * Подготавливает страницу
+     * Подготавливает элемент
      */
-    protected function preparePage(PageInterface $page): void
+    protected function prepareItem(ItemInterface $item): void
     {
-        if ($this->preparePage) {
-            $page->setPrepareBody($this->preparePage->prepare($page, $this->pages));
+        if ($this->prepareItem) {
+            $item->setPrepareBody($this->prepareItem->prepare($item, $this->items));
         }
     }
 
     /**
      * Записывает результат обхода
      */
-    protected function write(PageInterface $page): void
+    protected function write(ItemInterface $item): void
     {
         if ($this->writer) {
-            $this->writer->write($page);
+            $this->writer->write($item);
         }
     }
 
     /**
-     * Обрабатывает страницу
+     * Обрабатывает элемент
      */
-    protected function processPage(PageInterface $page): void
+    protected function processItem(ItemInterface $item): void
     {
-        $this->logger->info('GET {{uri}}', ['uri' => $page->getUri()->getUri()]);
-        $response = $this->httpClient->get($page->getUri()->getUri());
+        $this->logger->info('GET {{uri}}', ['uri' => $item->getUri()->getUri()]);
+        $response = $this->httpClient->get($item->getUri()->getUri());
         $this->logger->info(
             'Response {{uri}}: statusCode={{statusCode}} contentType={{contentType}}',
             [
-                'uri' => $page->getUri()->getUri(),
+                'uri' => $item->getUri()->getUri(),
                 'statusCode' => $response->getStatusCode(),
                 'contentType' => $response->getBody()->getContentType(),
             ]
         );
 
-        $page->setStatusCode($response->getStatusCode())
+        $item->setStatusCode($response->getStatusCode())
             ->setContentType($response->getBody()->getContentType())
             ->setBody($response->getBody()->get());
 
@@ -492,24 +492,24 @@ class Crawler implements CrawlerInterface
         $this->output->writeln(
             '{{}}/{{}} <color=green>Обработка uri {{|unescape}}</>',
             [
-                $page->getIndex(),
+                $item->getIndex(),
                 $this->count,
-                $page->getUri()->getUri(),
+                $item->getUri()->getUri(),
             ],
             null,
             OutputInterface::VERBOSE_HIGHT
         );
 
         if ($response->isSuccess()) {
-            $this->uriParse($page);
-            $this->preparePage($page);
-            $this->write($page);
+            $this->uriParse($item);
+            $this->prepareItem($item);
+            $this->write($item);
         }
 
         $this->progressbar->setMaxSteps($this->count);
         $this->progressbar->increment();
         $this->progressbar->display();
 
-        $this->bypassedPages[] = $page;
+        $this->bypassedItems[] = $item;
     }
 }

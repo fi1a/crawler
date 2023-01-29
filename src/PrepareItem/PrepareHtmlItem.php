@@ -2,25 +2,25 @@
 
 declare(strict_types=1);
 
-namespace Fi1a\Crawler\PreparePage;
+namespace Fi1a\Crawler\PrepareItem;
 
-use Fi1a\Crawler\PageCollectionInterface;
-use Fi1a\Crawler\PageInterface;
+use Fi1a\Crawler\ItemCollectionInterface;
+use Fi1a\Crawler\ItemInterface;
 use Fi1a\Http\Uri;
 use Fi1a\SimpleQuery\SimpleQuery;
 use InvalidArgumentException;
 
 /**
- * Подготавливает HTML страницу
+ * Подготавливает HTML элемент
  */
-class PrepareHtmlPage implements PreparePageInterface
+class PrepareHtmlItem implements PrepareItemInterface
 {
     /**
      * @inheritDoc
      */
-    public function prepare(PageInterface $page, PageCollectionInterface $pages)
+    public function prepare(ItemInterface $item, ItemCollectionInterface $items)
     {
-        $sq = new SimpleQuery((string) $page->getBody());
+        $sq = new SimpleQuery((string) $item->getBody());
         $links = $sq('a');
 
         /** @var \DOMElement $link */
@@ -35,13 +35,13 @@ class PrepareHtmlPage implements PreparePageInterface
                 continue;
             }
 
-            $absoluteUri = $page->getAbsoluteUri($uri);
+            $absoluteUri = $item->getAbsoluteUri($uri);
 
-            if ($absoluteUri->getHost() !== $page->getUri()->getHost()) {
+            if ($absoluteUri->getHost() !== $item->getUri()->getHost()) {
                 continue;
             }
 
-            $relativeUri = $page->getRelativeUri($uri);
+            $relativeUri = $item->getRelativeUri($uri);
 
             $sq($link)->attr('href', $relativeUri->getUri());
         }

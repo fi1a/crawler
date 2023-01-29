@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Fi1a\Crawler\Writers;
 
 use ErrorException;
-use Fi1a\Crawler\PageInterface;
+use Fi1a\Crawler\ItemInterface;
 use InvalidArgumentException;
 
 /**
@@ -38,14 +38,14 @@ class FileWriter implements WriterInterface
     /**
      * @inheritDoc
      */
-    public function write(PageInterface $page): bool
+    public function write(ItemInterface $item): bool
     {
-        $convertedUri = $page->getConvertedUri();
+        $convertedUri = $item->getConvertedUri();
         if (!$convertedUri) {
             throw new ErrorException(
                 sprintf(
                     'Пустой преобразованный uri для ссылки (%s)',
-                    htmlspecialchars($page->getUri()->getUri())
+                    htmlspecialchars($item->getUri()->getUri())
                 )
             );
         }
@@ -63,7 +63,7 @@ class FileWriter implements WriterInterface
 
         return $this->doWrite(
             $fileName,
-            (string) $page->getPrepareBody()
+            (string) $item->getPrepareBody()
         ) !== false;
     }
 

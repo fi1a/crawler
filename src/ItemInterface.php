@@ -7,9 +7,9 @@ namespace Fi1a\Crawler;
 use Fi1a\Http\UriInterface;
 
 /**
- * Interface ResultUriInterface
+ * Элемент
  */
-interface PageInterface
+interface ItemInterface
 {
     /**
      * Возвращает uri
@@ -69,12 +69,12 @@ interface PageInterface
     public function getConvertedUri(): ?UriInterface;
 
     /**
-     * Возвращает абсолютный путь относительно страницы
+     * Возвращает абсолютный путь относительно элемента
      */
     public function getAbsoluteUri(UriInterface $uri): UriInterface;
 
     /**
-     * Возвращает относительный путь относительно страницы
+     * Возвращает относительный путь относительно элемента
      */
     public function getRelativeUri(UriInterface $uri): UriInterface;
 
@@ -95,7 +95,7 @@ interface PageInterface
     public function getPrepareBody();
 
     /**
-     * Номер страницы в очереди на обработку
+     * Номер элемента в очереди на обработку
      */
     public function getIndex(): int;
 }

@@ -7,8 +7,8 @@ namespace Fi1a\Crawler;
 use Fi1a\Collection\CollectionInterface;
 
 /**
- * Коллекция страниц
+ * Коллекция элементов
  */
-interface PageCollectionInterface extends CollectionInterface
+interface ItemCollectionInterface extends CollectionInterface
 {
 }
