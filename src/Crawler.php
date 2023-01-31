@@ -28,6 +28,7 @@ use Fi1a\Crawler\UriParsers\UriParserInterface;
 use Fi1a\Crawler\UriTransformers\SiteUriTransformer;
 use Fi1a\Crawler\UriTransformers\UriTransformerInterface;
 use Fi1a\Crawler\Writers\WriterInterface;
+use Fi1a\Http\Uri;
 use Fi1a\Http\UriInterface;
 use Fi1a\HttpClient\HttpClient;
 use Fi1a\HttpClient\HttpClientInterface;
@@ -316,6 +317,35 @@ class Crawler implements CrawlerInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function addUri($uri)
+    {
+        if (!($uri instanceof UriInterface)) {
+            $uri = new Uri($uri);
+        }
+        $this->output->writeln(
+            'Вызван метод добавления uri',
+            [],
+            null,
+            OutputInterface::VERBOSE_HIGHT
+        );
+        $this->output->writeln(
+            '    Получен uri {{|unescape}}',
+            [$uri->getUri()],
+            null,
+            OutputInterface::VERBOSE_HIGHT
+        );
+        $this->logger->debug('Вызван метод добавления uri');
+        if ($this->addItemByUri($uri)) {
+            $this->storage->save($this->items);
+        }
+        $this->output->writeln('', [], null, OutputInterface::VERBOSE_HIGHT);
+
+        return $this;
+    }
+
+    /**
      * Инициализация из хранилища
      */
     protected function initFromStorage(): void
@@ -409,25 +439,39 @@ class Crawler implements CrawlerInterface
         }
         $this->logger->debug('Начальные uri', [], $logUri);
 
+        $this->output->writeln(
+            'Вызван метод добавления начальных uri',
+            [],
+            null,
+            OutputInterface::VERBOSE_HIGHT
+        );
+
         foreach ($this->config->getStartUri() as $startUri) {
             $this->output->writeln(
                 '    Получен uri {{|unescape}}',
                 [$startUri->getUri()],
                 null,
-                OutputInterface::VERBOSE_HIGHTEST
+                OutputInterface::VERBOSE_HIGHT
             );
 
-            $this->addItem($startUri);
+            $this->addItemByUri($startUri);
         }
     }
 
     /**
      * Добавляет элемент, если его нет
      */
-    protected function addItem(UriInterface $uri): void
+    protected function addItemByUri(UriInterface $uri): bool
     {
         if ($this->items->has($uri->getUri())) {
-            return;
+            $this->logger->debug(
+                'Uri {{uri}} уже добавлен',
+                [
+                    'uri' => $uri->getUri(),
+                ]
+            );
+
+            return false;
         }
 
         $item = new Item($uri);
@@ -471,6 +515,8 @@ class Crawler implements CrawlerInterface
 
         $this->queue->addEnd($item);
         $this->items[$uri->getUri()] = $item;
+
+        return true;
     }
 
     /**
@@ -506,7 +552,7 @@ class Crawler implements CrawlerInterface
                 ]
             );
 
-            $this->addItem($uri);
+            $this->addItemByUri($uri);
         }
     }
 
