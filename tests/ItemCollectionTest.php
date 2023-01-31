@@ -44,7 +44,7 @@ class ItemCollectionTest extends TestCase
     {
         $collection = new ItemCollection();
         $item = new Item(new Uri('/index.html'));
-        $item->setDownloadSuccess(true);
+        $item->setDownloadStatus(true);
         $collection[] = $item;
         $item = new Item(new Uri('/link1.html'));
         $collection[] = $item;
@@ -58,7 +58,7 @@ class ItemCollectionTest extends TestCase
     {
         $collection = new ItemCollection();
         $item = new Item(new Uri('/index.html'));
-        $item->setProcessSuccess(true);
+        $item->setProcessStatus(true);
         $collection[] = $item;
         $item = new Item(new Uri('/link1.html'));
         $collection[] = $item;
@@ -72,7 +72,7 @@ class ItemCollectionTest extends TestCase
     {
         $collection = new ItemCollection();
         $item = new Item(new Uri('/index.html'));
-        $item->setWriteSuccess(true);
+        $item->setWriteStatus(true);
         $collection[] = $item;
         $item = new Item(new Uri('/link1.html'));
         $collection[] = $item;

@@ -10,7 +10,6 @@ use Fi1a\Console\Component\PanelComponent\PanelComponent;
 use Fi1a\Console\Component\PanelComponent\PanelStyle;
 use Fi1a\Console\Component\PanelComponent\PanelStyleInterface;
 use Fi1a\Console\Component\ProgressbarComponent\ProgressbarComponent;
-use Fi1a\Console\Component\ProgressbarComponent\ProgressbarComponentInterface;
 use Fi1a\Console\Component\ProgressbarComponent\ProgressbarStyle;
 use Fi1a\Console\IO\ConsoleOutput;
 use Fi1a\Console\IO\ConsoleOutputInterface;
@@ -528,7 +527,11 @@ class Crawler implements CrawlerInterface
             assert($item instanceof ItemInterface);
             $index++;
 
-            $this->$function($item, $progressbar, $index);
+            if ($this->output->getVerbose() >= OutputInterface::VERBOSE_HIGHT) {
+                $progressbar->clear();
+            }
+
+            $this->$function($item, $index);
 
             $progressbar->setMaxSteps($this->items->count());
             $progressbar->increment();
@@ -566,15 +569,8 @@ class Crawler implements CrawlerInterface
     /**
      * Загрузка элемента
      */
-    protected function downloadItem(
-        ItemInterface $item,
-        ProgressbarComponentInterface $progressbar,
-        int $index
-    ): void {
-        if ($this->output->getVerbose() >= OutputInterface::VERBOSE_HIGHT) {
-            $progressbar->clear();
-        }
-
+    protected function downloadItem(ItemInterface $item, int $index): void
+    {
         if (!$item->isAllow()) {
             $this->output->writeln(
                 '{{index}}/{{count}} <color=yellow>Пропуск загрузки uri {{uri|unescape}}</>',
@@ -590,6 +586,33 @@ class Crawler implements CrawlerInterface
             return;
         }
 
+        if ($item->getDownloadStatus() !== null) {
+            $this->output->writeln(
+                '{{index}}/{{count}} <color=green>Uri {{uri|unescape}} уже загружен</>',
+                [
+                    'index' => $index,
+                    'count' => $this->items->count(),
+                    'uri' => $item->getItemUri()->getUri(),
+                ],
+                null,
+                OutputInterface::VERBOSE_HIGHT
+            );
+
+            if ($item->getDownloadStatus() === false) {
+                $this->output->writeln(
+                    '    <color=red>- Status={{statusCode}} ({{reasonPhrase}})</>',
+                    [
+                        'statusCode' => $item->getStatusCode(),
+                        'reasonPhrase' => $item->getReasonPhrase(),
+                    ],
+                    null,
+                    OutputInterface::VERBOSE_HIGHT
+                );
+            }
+
+            return;
+        }
+
         $this->output->writeln(
             '{{index}}/{{count}} <color=green>Загрузка uri {{uri|unescape}}</>',
             [
@@ -601,37 +624,26 @@ class Crawler implements CrawlerInterface
             OutputInterface::VERBOSE_HIGHT
         );
 
-        $body = $this->storage->getBody($item);
-        if ($body === false) {
-            $this->output->writeln(
-                '    GET {{uri}}',
-                ['uri' => $item->getItemUri()->getUri()],
-                null,
-                OutputInterface::VERBOSE_HIGHT
-            );
+        $this->output->writeln(
+            '    GET {{uri}}',
+            ['uri' => $item->getItemUri()->getUri()],
+            null,
+            OutputInterface::VERBOSE_HIGHT
+        );
 
-            $this->logger->info('GET {{uri}}', ['uri' => $item->getItemUri()->getUri()]);
-            $response = $this->httpClient->get($item->getItemUri()->getUri());
+        $this->logger->info('GET {{uri}}', ['uri' => $item->getItemUri()->getUri()]);
+        $response = $this->httpClient->get($item->getItemUri()->getUri());
 
-            $item->setStatusCode($response->getStatusCode())
-                ->setReasonPhrase($response->getReasonPhrase())
-                ->setDownloadSuccess($response->isSuccess())
-                ->setContentType($response->getBody()->getContentType());
+        $item->setStatusCode($response->getStatusCode())
+            ->setReasonPhrase($response->getReasonPhrase())
+            ->setDownloadStatus($response->isSuccess())
+            ->setContentType($response->getBody()->getContentType());
 
-            $body = $response->getBody()->getRaw();
-            $this->storage->saveBody($item, $response->getBody()->getRaw());
-        } else {
-            $this->logger->info('{{uri}} извлечен из хранилища', ['uri' => $item->getItemUri()->getUri()]);
-            $this->output->writeln(
-                '    Извлечен из хранилища',
-                [],
-                null,
-                OutputInterface::VERBOSE_HIGHT
-            );
-        }
+        $body = $response->getBody()->getRaw();
+        $this->storage->saveBody($item, $response->getBody()->getRaw());
 
         $this->logger->log(
-            $item->isDownloadSuccess() ? LevelInterface::INFO : LevelInterface::WARNING,
+            $item->getDownloadStatus() ? LevelInterface::INFO : LevelInterface::WARNING,
             'Item {{uri}}: statusCode={{statusCode}} contentType={{contentType}}',
             [
                 'uri' => $item->getItemUri()->getUri(),
@@ -642,7 +654,7 @@ class Crawler implements CrawlerInterface
 
         $item->setBody($body);
 
-        if ($item->isDownloadSuccess()) {
+        if ($item->getDownloadStatus()) {
             $this->uriParse($item);
         } else {
             $this->output->writeln(
@@ -662,13 +674,21 @@ class Crawler implements CrawlerInterface
     /**
      * Преобразование
      */
-    protected function processItem(
-        ItemInterface $item,
-        ProgressbarComponentInterface $progressbar,
-        int $index
-    ): void {
-        if ($this->output->getVerbose() >= OutputInterface::VERBOSE_HIGHT) {
-            $progressbar->clear();
+    protected function processItem(ItemInterface $item, int $index): void
+    {
+        if ($item->getProcessStatus() !== null) {
+            $this->output->writeln(
+                '{{index}}/{{count}} <color=green>Uri {{uri|unescape}} уже преобразован</>',
+                [
+                    'index' => $index,
+                    'count' => $this->items->count(),
+                    'uri' => $item->getItemUri()->getUri(),
+                ],
+                null,
+                OutputInterface::VERBOSE_HIGHT
+            );
+
+            return;
         }
 
         $this->output->writeln(
@@ -684,7 +704,7 @@ class Crawler implements CrawlerInterface
 
         $newItemUri = $this->uriTransformer ? $this->uriTransformer->transform($item) : $item->getItemUri();
         $item->setNewItemUri($newItemUri)
-            ->setProcessSuccess(true);
+            ->setProcessStatus(true);
 
         if ($newItemUri->getUri() === $item->getItemUri()->getUri()) {
             $this->output->writeln(
@@ -721,18 +741,26 @@ class Crawler implements CrawlerInterface
     /**
      * Записывает результат обхода
      */
-    protected function writeItem(
-        ItemInterface $item,
-        ProgressbarComponentInterface $progressbar,
-        int $index
-    ): void {
-        if ($this->output->getVerbose() >= OutputInterface::VERBOSE_HIGHT) {
-            $progressbar->clear();
-        }
-
+    protected function writeItem(ItemInterface $item, int $index): void
+    {
         if (!$item->isAllow()) {
             $this->output->writeln(
                 '{{index}}/{{count}} <color=yellow>Пропуск записи uri {{uri|unescape}}</>',
+                [
+                    'index' => $index,
+                    'count' => $this->items->count(),
+                    'uri' => $item->getItemUri()->getUri(),
+                ],
+                null,
+                OutputInterface::VERBOSE_HIGHT
+            );
+
+            return;
+        }
+
+        if ($item->getWriteStatus() !== null) {
+            $this->output->writeln(
+                '{{index}}/{{count}} <color=green>Uri {{uri|unescape}} уже записан</>',
                 [
                     'index' => $index,
                     'count' => $this->items->count(),
@@ -756,9 +784,9 @@ class Crawler implements CrawlerInterface
             OutputInterface::VERBOSE_HIGHT
         );
 
-        $item->setWriteSuccess(false);
+        $item->setWriteStatus(false);
 
-        if ($item->isDownloadSuccess()) {
+        if ($item->getDownloadStatus()) {
             $body = $this->storage->getBody($item);
             if ($body !== false) {
                 $item->setBody($body);
@@ -766,7 +794,7 @@ class Crawler implements CrawlerInterface
                     $item->setPrepareBody($this->prepareItem->prepare($item, $this->items));
                 }
                 if ($this->writer && $this->writer->write($item)) {
-                    $item->setWriteSuccess(true);
+                    $item->setWriteStatus(true);
 
                     $this->output->writeln(
                         '    Записан',

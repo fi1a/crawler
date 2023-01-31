@@ -45,36 +45,36 @@ interface ItemInterface
      *
      * @return $this
      */
-    public function setDownloadSuccess(bool $success);
+    public function setDownloadStatus(?bool $status);
 
     /**
      * Запрос выполнен успешно или нет
      */
-    public function isDownloadSuccess(): bool;
+    public function getDownloadStatus(): ?bool;
 
     /**
      * Обработка выполнена успешно или нет
      *
      * @return $this
      */
-    public function setProcessSuccess(bool $success);
+    public function setProcessStatus(?bool $status);
 
     /**
      * Обработка выполнена успешно или нет
      */
-    public function isProcessSuccess(): bool;
+    public function getProcessStatus(): ?bool;
 
     /**
      * Запись выполнена успешно или нет
      *
      * @return $this
      */
-    public function setWriteSuccess(bool $success);
+    public function setWriteStatus(?bool $status);
 
     /**
      * Запись выполнена успешно или нет
      */
-    public function isWriteSuccess(): bool;
+    public function getWriteStatus(): ?bool;
 
     /**
      * Разрешено к обработке или нет
@@ -153,9 +153,9 @@ interface ItemInterface
     public function getAbsoluteUri(UriInterface $uri): UriInterface;
 
     /**
-     * @return array{allow: bool, contentType: (string|null), downloadSuccess: bool, itemUri: string,
-     * newItemUri: (string|null), processSuccess: bool, reasonPhrase: (string|null), statusCode: (int|null),
-     * writeSuccess: bool}
+     * @return array{allow: bool, contentType: string|null, downloadStatus: bool|null, itemUri: string,
+     * newItemUri: string|null, processStatus: bool|null, reasonPhrase: string|null, statusCode: int|null,
+     * writeStatus: bool|null}
      */
     public function toArray(): array;
 

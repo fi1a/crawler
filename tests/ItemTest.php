@@ -24,9 +24,9 @@ class ItemTest extends TestCase
         'allow' => true,
         'statusCode' => 200,
         'reasonPhrase' => 'OK',
-        'downloadSuccess' => true,
-        'processSuccess' => true,
-        'writeSuccess' => true,
+        'downloadStatus' => true,
+        'processStatus' => true,
+        'writeStatus' => true,
         'contentType' => '*/*',
         'newItemUri' => 'https://127.0.0.1:3000/index.html',
     ];
@@ -160,9 +160,9 @@ class ItemTest extends TestCase
     public function testDownload(): void
     {
         $item = new Item(new Uri($this->getUrl('/index.html')));
-        $this->assertFalse($item->isDownloadSuccess());
-        $item->setDownloadSuccess(true);
-        $this->assertTrue($item->isDownloadSuccess());
+        $this->assertNull($item->getDownloadStatus());
+        $item->setDownloadStatus(true);
+        $this->assertTrue($item->getDownloadStatus());
     }
 
     /**
@@ -171,9 +171,9 @@ class ItemTest extends TestCase
     public function testProcess(): void
     {
         $item = new Item(new Uri($this->getUrl('/index.html')));
-        $this->assertFalse($item->isProcessSuccess());
-        $item->setProcessSuccess(true);
-        $this->assertTrue($item->isProcessSuccess());
+        $this->assertNull($item->getProcessStatus());
+        $item->setProcessStatus(true);
+        $this->assertTrue($item->getProcessStatus());
     }
 
     /**
@@ -182,9 +182,9 @@ class ItemTest extends TestCase
     public function testWrite(): void
     {
         $item = new Item(new Uri($this->getUrl('/index.html')));
-        $this->assertFalse($item->isWriteSuccess());
-        $item->setWriteSuccess(true);
-        $this->assertTrue($item->isWriteSuccess());
+        $this->assertNull($item->getWriteStatus());
+        $item->setWriteStatus(true);
+        $this->assertTrue($item->getWriteStatus());
     }
 
     /**
@@ -206,9 +206,9 @@ class ItemTest extends TestCase
         $item = new Item(new Uri($this->getUrl('/index.html')));
         $item->setStatusCode(200);
         $item->setReasonPhrase('OK');
-        $item->setDownloadSuccess(true);
-        $item->setProcessSuccess(true);
-        $item->setWriteSuccess(true);
+        $item->setDownloadStatus(true);
+        $item->setProcessStatus(true);
+        $item->setWriteStatus(true);
         $item->setAllow(true);
         $item->setBody('body');
         $item->setPrepareBody('body');
@@ -227,9 +227,9 @@ class ItemTest extends TestCase
         $this->assertTrue($item->isAllow());
         $this->assertEquals(200, $item->getStatusCode());
         $this->assertEquals('OK', $item->getReasonPhrase());
-        $this->assertTrue($item->isDownloadSuccess());
-        $this->assertTrue($item->isProcessSuccess());
-        $this->assertTrue($item->isWriteSuccess());
+        $this->assertTrue($item->getDownloadStatus());
+        $this->assertTrue($item->getProcessStatus());
+        $this->assertTrue($item->getWriteStatus());
         $this->assertEquals('*/*', $item->getContentType());
         $this->assertEquals('https://127.0.0.1:3000/index.html', $item->getNewItemUri()->getUri());
     }
