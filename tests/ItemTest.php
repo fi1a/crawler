@@ -9,6 +9,7 @@ use Fi1a\Http\Mime;
 use Fi1a\Http\Uri;
 use Fi1a\Http\UriInterface;
 use Fi1a\Unit\Crawler\TestCases\TestCase;
+use InvalidArgumentException;
 
 /**
  * Элементы
@@ -16,13 +17,38 @@ use Fi1a\Unit\Crawler\TestCases\TestCase;
 class ItemTest extends TestCase
 {
     /**
+     * @var array<string, mixed>
+     */
+    protected $itemArray = [
+        'itemUri' => 'https://127.0.0.1:3000/index.html',
+        'allow' => true,
+        'statusCode' => 200,
+        'reasonPhrase' => 'OK',
+        'downloadSuccess' => true,
+        'processSuccess' => true,
+        'writeSuccess' => true,
+        'contentType' => '*/*',
+        'newItemUri' => 'https://127.0.0.1:3000/index.html',
+    ];
+
+    /**
      * Uri
      */
-    public function testUri(): void
+    public function testItemUri(): void
     {
-        $item = new Item(new Uri($this->getUrl('/index.html')), 0);
+        $item = new Item(new Uri($this->getUrl('/index.html')));
+        $this->assertInstanceOf(UriInterface::class, $item->getItemUri());
+    }
 
-        $this->assertInstanceOf(UriInterface::class, $item->getUri());
+    /**
+     * Uri
+     */
+    public function testNewItemUri(): void
+    {
+        $item = new Item(new Uri($this->getUrl('/index.html')));
+        $this->assertNull($item->getNewItemUri());
+        $item->setNewItemUri(new Uri($this->getUrl('/index.html')));
+        $this->assertInstanceOf(UriInterface::class, $item->getNewItemUri());
     }
 
     /**
@@ -30,11 +56,21 @@ class ItemTest extends TestCase
      */
     public function testStatusCode(): void
     {
-        $item = new Item(new Uri($this->getUrl('/index.html')), 0);
-
+        $item = new Item(new Uri($this->getUrl('/index.html')));
         $this->assertNull($item->getStatusCode());
         $item->setStatusCode(200);
         $this->assertEquals(200, $item->getStatusCode());
+    }
+
+    /**
+     * Текст ответа
+     */
+    public function testReasonPhrase(): void
+    {
+        $item = new Item(new Uri($this->getUrl('/index.html')));
+        $this->assertNull($item->getReasonPhrase());
+        $item->setReasonPhrase('Not found');
+        $this->assertEquals('Not found', $item->getReasonPhrase());
     }
 
     /**
@@ -42,7 +78,7 @@ class ItemTest extends TestCase
      */
     public function testBody(): void
     {
-        $item = new Item(new Uri($this->getUrl('/index.html')), 0);
+        $item = new Item(new Uri($this->getUrl('/index.html')));
 
         $this->assertNull($item->getBody());
         $item->setBody('body');
@@ -50,27 +86,41 @@ class ItemTest extends TestCase
     }
 
     /**
+     * Подготовленное тело ответа
+     */
+    public function testPrepareBody(): void
+    {
+        $item = new Item(new Uri($this->getUrl('/index.html')));
+
+        $this->assertNull($item->getPrepareBody());
+        $item->setPrepareBody('body');
+        $this->assertEquals('body', $item->getPrepareBody());
+    }
+
+    /**
+     * Освободить тело ответа
+     */
+    public function testFree(): void
+    {
+        $item = new Item(new Uri($this->getUrl('/index.html')));
+        $item->setBody('body');
+        $this->assertEquals('body', $item->getBody());
+        $item->setPrepareBody('body');
+        $this->assertEquals('body', $item->getPrepareBody());
+        $item->free();
+        $this->assertNull($item->getBody());
+        $this->assertNull($item->getPrepareBody());
+    }
+
+    /**
      * Тип контента
      */
     public function testContentType(): void
     {
-        $item = new Item(new Uri($this->getUrl('/index.html')), 0);
-
+        $item = new Item(new Uri($this->getUrl('/index.html')));
         $this->assertNull($item->getContentType());
         $item->setContentType(Mime::HTML);
         $this->assertEquals(Mime::HTML, $item->getContentType());
-    }
-
-    /**
-     * Преобразованное Uri
-     */
-    public function testConvertedUri(): void
-    {
-        $item = new Item(new Uri($this->getUrl('/index.html')), 0);
-
-        $this->assertNull($item->getConvertedUri());
-        $item->setConvertedUri(new Uri('/index.html'));
-        $this->assertInstanceOf(UriInterface::class, $item->getConvertedUri());
     }
 
     /**
@@ -78,7 +128,7 @@ class ItemTest extends TestCase
      */
     public function testAbsoluteUri(): void
     {
-        $item = new Item(new Uri($this->getUrl('/index.html')), 0);
+        $item = new Item(new Uri($this->getUrl('/index.html')));
 
         $this->assertEquals(
             'https://127.0.0.1:3000/some/path.html',
@@ -91,7 +141,7 @@ class ItemTest extends TestCase
      */
     public function testAbsoluteUriFromRelative(): void
     {
-        $item = new Item(new Uri($this->getUrl('/some/path/index.php')), 0);
+        $item = new Item(new Uri($this->getUrl('/some/path/index.php')));
 
         $this->assertEquals(
             'https://127.0.0.1:3000/some/path.html',
@@ -105,57 +155,91 @@ class ItemTest extends TestCase
     }
 
     /**
-     * Создание относительного uri
+     * Загружен или нет
      */
-    public function testRelativeUri(): void
+    public function testDownload(): void
     {
-        $item = new Item(new Uri($this->getUrl('/path/to/index.html')), 0);
-
-        $this->assertEquals(
-            'index.html',
-            $item->getRelativeUri(new Uri('/path/to/index.html'))->getUri()
-        );
-
-        $this->assertEquals(
-            '../path.html',
-            $item->getRelativeUri(new Uri('/path/path.html'))->getUri()
-        );
-
-        $this->assertEquals(
-            '../some/path.html',
-            $item->getRelativeUri(new Uri('/path/some/path.html'))->getUri()
-        );
-
-        $this->assertEquals(
-            '../../new/path.html',
-            $item->getRelativeUri(new Uri('/new/path.html'))->getUri()
-        );
-
-        $this->assertEquals(
-            '../../new/path.html',
-            $item->getRelativeUri(new Uri('../../new/path.html'))->getUri()
-        );
+        $item = new Item(new Uri($this->getUrl('/index.html')));
+        $this->assertFalse($item->isDownloadSuccess());
+        $item->setDownloadSuccess(true);
+        $this->assertTrue($item->isDownloadSuccess());
     }
 
     /**
-     * Подготовленное тело ответа
+     * Обработан или нет
      */
-    public function testPrepareBody(): void
+    public function testProcess(): void
     {
-        $item = new Item(new Uri($this->getUrl('/index.html')), 0);
+        $item = new Item(new Uri($this->getUrl('/index.html')));
+        $this->assertFalse($item->isProcessSuccess());
+        $item->setProcessSuccess(true);
+        $this->assertTrue($item->isProcessSuccess());
+    }
 
-        $this->assertNull($item->getPrepareBody());
+    /**
+     * Записан или нет
+     */
+    public function testWrite(): void
+    {
+        $item = new Item(new Uri($this->getUrl('/index.html')));
+        $this->assertFalse($item->isWriteSuccess());
+        $item->setWriteSuccess(true);
+        $this->assertTrue($item->isWriteSuccess());
+    }
+
+    /**
+     * Разрешена обработка или нет
+     */
+    public function testAllow(): void
+    {
+        $item = new Item(new Uri($this->getUrl('/index.html')));
+        $this->assertFalse($item->isAllow());
+        $item->setAllow(true);
+        $this->assertTrue($item->isAllow());
+    }
+
+    /**
+     * В массив
+     */
+    public function testToArray(): void
+    {
+        $item = new Item(new Uri($this->getUrl('/index.html')));
+        $item->setStatusCode(200);
+        $item->setReasonPhrase('OK');
+        $item->setDownloadSuccess(true);
+        $item->setProcessSuccess(true);
+        $item->setWriteSuccess(true);
+        $item->setAllow(true);
+        $item->setBody('body');
         $item->setPrepareBody('body');
-        $this->assertEquals('body', $item->getPrepareBody());
+        $item->setContentType('*/*');
+        $item->setNewItemUri(new Uri($this->getUrl('/index.html')));
+        $this->assertEquals($this->itemArray, $item->toArray());
     }
 
     /**
-     * Место в очереди
+     * Из массива
      */
-    public function testIndex(): void
+    public function testFromArray(): void
     {
-        $item = new Item(new Uri($this->getUrl('/index.html')), 1);
+        $item = Item::fromArray($this->itemArray);
+        $this->assertEquals('https://127.0.0.1:3000/index.html', $item->getItemUri()->getUri());
+        $this->assertTrue($item->isAllow());
+        $this->assertEquals(200, $item->getStatusCode());
+        $this->assertEquals('OK', $item->getReasonPhrase());
+        $this->assertTrue($item->isDownloadSuccess());
+        $this->assertTrue($item->isProcessSuccess());
+        $this->assertTrue($item->isWriteSuccess());
+        $this->assertEquals('*/*', $item->getContentType());
+        $this->assertEquals('https://127.0.0.1:3000/index.html', $item->getNewItemUri()->getUri());
+    }
 
-        $this->assertEquals(1, $item->getIndex());
+    /**
+     * Из массива
+     */
+    public function testFromArrayException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        Item::fromArray([]);
     }
 }

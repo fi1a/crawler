@@ -37,13 +37,16 @@ class PrepareHtmlItem implements PrepareItemInterface
 
             $absoluteUri = $item->getAbsoluteUri($uri);
 
-            if ($absoluteUri->getHost() !== $item->getUri()->getHost()) {
+            if (!$items->has($absoluteUri->getUri())) {
                 continue;
             }
 
-            $relativeUri = $item->getRelativeUri($uri);
-
-            $sq($link)->attr('href', $relativeUri->getUri());
+            /** @var ItemInterface $newItem */
+            $newItem = $items->get($absoluteUri->getUri());
+            $newItemUri = $newItem->getNewItemUri();
+            if ($newItemUri) {
+                $sq($link)->attr('href', $newItemUri->getUri());
+            }
         }
 
         return (string) $sq;

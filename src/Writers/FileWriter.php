@@ -18,8 +18,14 @@ class FileWriter implements WriterInterface
      */
     protected $path;
 
-    public function __construct(string $path)
+    /**
+     * @var string|null
+     */
+    protected $urlPrefix;
+
+    public function __construct(string $path, ?string $urlPrefix = null)
     {
+        $this->urlPrefix = $urlPrefix;
         if (!$path) {
             throw new InvalidArgumentException('Не передан путь до директории');
         }
@@ -40,16 +46,7 @@ class FileWriter implements WriterInterface
      */
     public function write(ItemInterface $item): bool
     {
-        $convertedUri = $item->getConvertedUri();
-        if (!$convertedUri) {
-            throw new ErrorException(
-                sprintf(
-                    'Пустой преобразованный uri для ссылки (%s)',
-                    htmlspecialchars($item->getUri()->getUri())
-                )
-            );
-        }
-        $fileName = $this->path . $convertedUri->getUri();
+        $fileName = $this->getFileName($item);
 
         $pathInfo = pathinfo($fileName);
         if ($pathInfo['dirname'] && !is_dir($pathInfo['dirname'])) {
@@ -77,5 +74,25 @@ class FileWriter implements WriterInterface
     protected function doWrite(string $fileName, string $content)
     {
         return file_put_contents($fileName, $content);
+    }
+
+    protected function getFileName(ItemInterface $item): string
+    {
+        $newItemUri = $item->getNewItemUri();
+        if (!$newItemUri) {
+            throw new ErrorException(
+                sprintf(
+                    'Пустой преобразованный uri для ссылки (%s)',
+                    htmlspecialchars($item->getItemUri()->getUri())
+                )
+            );
+        }
+        $uri = $newItemUri->getUri();
+
+        if ($this->urlPrefix && mb_stripos($uri, $this->urlPrefix) === 0) {
+            $uri = mb_substr($uri, mb_strlen($this->urlPrefix));
+        }
+
+        return rtrim($this->path, '/') . '/' . ltrim($uri, '/');
     }
 }

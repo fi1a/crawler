@@ -14,14 +14,14 @@ interface ItemInterface
     /**
      * Возвращает uri
      */
-    public function getUri(): UriInterface;
+    public function getItemUri(): UriInterface;
 
     /**
      * Устанавливает код статуса ответа
      *
      * @return $this
      */
-    public function setStatusCode(int $statusCode);
+    public function setStatusCode(?int $statusCode);
 
     /**
      * Возвращает код статуса ответа
@@ -29,54 +29,76 @@ interface ItemInterface
     public function getStatusCode(): ?int;
 
     /**
-     * Установить тело ответа
-     *
-     * @param mixed $body
+     * Текст причины ассоциированный с кодом статуса
      *
      * @return $this
      */
-    public function setBody($body);
+    public function setReasonPhrase(?string $reasonPhrase);
+
+    /**
+     * Текст причины ассоциированный с кодом статуса
+     */
+    public function getReasonPhrase(): ?string;
+
+    /**
+     * Запрос выполнен успешно или нет
+     *
+     * @return $this
+     */
+    public function setDownloadSuccess(bool $success);
+
+    /**
+     * Запрос выполнен успешно или нет
+     */
+    public function isDownloadSuccess(): bool;
+
+    /**
+     * Обработка выполнена успешно или нет
+     *
+     * @return $this
+     */
+    public function setProcessSuccess(bool $success);
+
+    /**
+     * Обработка выполнена успешно или нет
+     */
+    public function isProcessSuccess(): bool;
+
+    /**
+     * Запись выполнена успешно или нет
+     *
+     * @return $this
+     */
+    public function setWriteSuccess(bool $success);
+
+    /**
+     * Запись выполнена успешно или нет
+     */
+    public function isWriteSuccess(): bool;
+
+    /**
+     * Разрешено к обработке или нет
+     *
+     * @return $this
+     */
+    public function setAllow(bool $allow);
+
+    /**
+     * Разрешено к обработке или нет
+     */
+    public function isAllow(): bool;
+
+    /**
+     * Установить тело ответа
+     *
+     * @return $this
+     */
+    public function setBody(string $body);
 
     /**
      * Вернуть тело ответа
-     *
-     * @return mixed
      */
-    public function getBody();
-
-    /**
-     * Установить тип контента
-     *
-     * @return $this
-     */
-    public function setContentType(?string $contentType);
-
-    /**
-     * Вернуть тип контента
-     */
-    public function getContentType(): ?string;
-
-    /**
-     * Установить преобразованное Uri
-     *
-     * @return $this
-     */
-    public function setConvertedUri(UriInterface $uri);
-
-    /**
-     * Вернуть преобразованное Uri
-     */
-    public function getConvertedUri(): ?UriInterface;
-
-    /**
-     * Возвращает абсолютный путь относительно элемента
-     */
-    public function getAbsoluteUri(UriInterface $uri): UriInterface;
-
-    /**
-     * Возвращает относительный путь относительно элемента
-     */
-    public function getRelativeUri(UriInterface $uri): UriInterface;
+    public function getBody(): ?string;
 
     /**
      * Установить подготовленное тело ответа
@@ -95,7 +117,54 @@ interface ItemInterface
     public function getPrepareBody();
 
     /**
-     * Номер элемента в очереди на обработку
+     * Очищает тело запроса
+     *
+     * @return $this
      */
-    public function getIndex(): int;
+    public function free();
+
+    /**
+     * Установить тип контента
+     *
+     * @return $this
+     */
+    public function setContentType(?string $contentType);
+
+    /**
+     * Вернуть тип контента
+     */
+    public function getContentType(): ?string;
+
+    /**
+     * Установить новый uri
+     *
+     * @return $this
+     */
+    public function setNewItemUri(UriInterface $newItemUri);
+
+    /**
+     * Вернуть новый uri
+     */
+    public function getNewItemUri(): ?UriInterface;
+
+    /**
+     * Возвращает абсолютный путь относительно элемента
+     */
+    public function getAbsoluteUri(UriInterface $uri): UriInterface;
+
+    /**
+     * @return array{allow: bool, contentType: (string|null), downloadSuccess: bool, itemUri: string,
+     * newItemUri: (string|null), processSuccess: bool, reasonPhrase: (string|null), statusCode: (int|null),
+     * writeSuccess: bool}
+     */
+    public function toArray(): array;
+
+    /**
+     * Из массива
+     *
+     * @param array<array-key, mixed> $fields
+     *
+     * @return ItemInterface
+     */
+    public static function fromArray(array $fields);
 }

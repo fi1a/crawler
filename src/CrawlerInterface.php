@@ -7,8 +7,8 @@ namespace Fi1a\Crawler;
 use Fi1a\Crawler\PrepareItem\PrepareItemInterface;
 use Fi1a\Crawler\Restrictions\RestrictionCollectionInterface;
 use Fi1a\Crawler\Restrictions\RestrictionInterface;
-use Fi1a\Crawler\UriConverters\UriConverterInterface;
 use Fi1a\Crawler\UriParsers\UriParserInterface;
+use Fi1a\Crawler\UriTransformers\UriTransformerInterface;
 use Fi1a\Crawler\Writers\WriterInterface;
 
 /**
@@ -16,12 +16,33 @@ use Fi1a\Crawler\Writers\WriterInterface;
  */
 interface CrawlerInterface
 {
-    public function __construct(ConfigInterface $config);
-
     /**
      * Запуск
+     *
+     * @return $this
      */
-    public function run(): void;
+    public function run();
+
+    /**
+     * Скачивание данных
+     *
+     * @return $this
+     */
+    public function download();
+
+    /**
+     * Обработка скаченных данных
+     *
+     * @return $this
+     */
+    public function process();
+
+    /**
+     * Запись скаченных данных
+     *
+     * @return $this
+     */
+    public function write();
 
     /**
      * Добавить ограничение
@@ -36,9 +57,9 @@ interface CrawlerInterface
     public function getRestrictions(): RestrictionCollectionInterface;
 
     /**
-     * Возвращает обойденные адреса
+     * Возвращает адреса
      */
-    public function getBypassedItems(): ItemCollectionInterface;
+    public function getItems(): ItemCollectionInterface;
 
     /**
      * Устанавливает парсер uri для обхода (в зависимости от типа контента)
@@ -64,7 +85,7 @@ interface CrawlerInterface
      *
      * @return $this
      */
-    public function setUriConverter(UriConverterInterface $uriConverter);
+    public function setUriTransformer(UriTransformerInterface $uriTransformer);
 
     /**
      * Установить класс подготавливающий элемент
@@ -79,4 +100,11 @@ interface CrawlerInterface
      * @return $this
      */
     public function setWriter(WriterInterface $writer);
+
+    /**
+     * Очищает данные хранилища
+     *
+     * @return $this
+     */
+    public function clearStorageData();
 }

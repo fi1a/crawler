@@ -20,7 +20,9 @@
     "fi1a/simplequery": "^2.0",
     "fi1a/console": "^2.1",
     "fi1a/log": "dev-master",
-    "ext-dom": "*"
+    "fi1a/filesystem": "^1.0",
+    "ext-dom": "*",
+    "ext-json": "*"
   },
   "suggest": {
   },
