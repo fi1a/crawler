@@ -6,6 +6,11 @@ namespace Fi1a\Crawler\Writers;
 
 use ErrorException;
 use Fi1a\Crawler\ItemInterface;
+use Fi1a\Filesystem\Adapters\LocalAdapter;
+use Fi1a\Filesystem\FileInterface;
+use Fi1a\Filesystem\Filesystem;
+use Fi1a\Filesystem\FilesystemInterface;
+use Fi1a\Filesystem\FolderInterface;
 use InvalidArgumentException;
 
 /**
@@ -14,14 +19,19 @@ use InvalidArgumentException;
 class FileWriter implements WriterInterface
 {
     /**
-     * @var string
+     * @var FolderInterface
      */
-    protected $path;
+    protected $pathDir;
 
     /**
      * @var string|null
      */
     protected $urlPrefix;
+
+    /**
+     * @var FilesystemInterface
+     */
+    protected $filesystem;
 
     public function __construct(string $path, ?string $urlPrefix = null)
     {
@@ -29,15 +39,20 @@ class FileWriter implements WriterInterface
         if (!$path) {
             throw new InvalidArgumentException('Не передан путь до директории');
         }
-        $this->path = $path;
-        if (!is_dir($this->path)) {
-            @mkdir($this->path, 0777, true);
+        $adapter = new LocalAdapter($path);
+        $this->filesystem = new Filesystem($adapter);
+        $this->pathDir = $this->filesystem->factoryFolder('./');
+        if (!$this->pathDir->isExist()) {
+            if ($this->pathDir->make() === false) {
+                throw new ErrorException(
+                    sprintf('Не удалось создать директорию "%s"', $this->pathDir->getPath())
+                );
+            }
         }
-        if (!is_dir($this->path)) {
-            throw new ErrorException(sprintf('Не удалось создать папку "%s"', $this->path));
-        }
-        if (!is_writable($this->path)) {
-            throw new ErrorException(sprintf('Нет прав на запись в папку "%s"', $this->path));
+        if (!$this->pathDir->canWrite()) {
+            throw new ErrorException(
+                sprintf('Нет прав на запись в директорию "%s"', $this->pathDir->getPath())
+            );
         }
     }
 
@@ -46,22 +61,15 @@ class FileWriter implements WriterInterface
      */
     public function write(ItemInterface $item): bool
     {
-        $fileName = $this->getFileName($item);
-
-        $pathInfo = pathinfo($fileName);
-        if ($pathInfo['dirname'] && !is_dir($pathInfo['dirname'])) {
-            @mkdir($pathInfo['dirname'], 0777, true);
-            if (!is_dir($pathInfo['dirname'])) {
-                throw new ErrorException(
-                    sprintf('Не удалось создать папку "%s"', $pathInfo['dirname'])
-                );
-            }
+        $file = $this->filesystem->factoryFile($this->getFileName($item));
+        $folder = $file->getParent();
+        if ($folder && !$folder->isExist() && !$folder->make()) {
+            throw new ErrorException(
+                sprintf('Не удалось создать директорию "%s"', $folder->getPath())
+            );
         }
 
-        return $this->doWrite(
-            $fileName,
-            (string) $item->getPrepareBody()
-        ) !== false;
+        return $this->doWrite($file, (string) $item->getPrepareBody()) !== false;
     }
 
     /**
@@ -71,11 +79,14 @@ class FileWriter implements WriterInterface
      *
      * @codeCoverageIgnore
      */
-    protected function doWrite(string $fileName, string $content)
+    protected function doWrite(FileInterface $file, string $content)
     {
-        return file_put_contents($fileName, $content);
+        return $file->write($content);
     }
 
+    /**
+     * Возвращает название файла
+     */
     protected function getFileName(ItemInterface $item): string
     {
         $newItemUri = $item->getNewItemUri();
@@ -93,6 +104,6 @@ class FileWriter implements WriterInterface
             $uri = mb_substr($uri, mb_strlen($this->urlPrefix));
         }
 
-        return rtrim($this->path, '/') . '/' . ltrim($uri, '/');
+        return rtrim($this->pathDir->getPath(), '/') . '/' . ltrim($uri, '/');
     }
 }
