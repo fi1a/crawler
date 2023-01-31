@@ -17,7 +17,7 @@ use InvalidArgumentException;
 class Config extends ValueObject implements ConfigInterface
 {
     protected $modelKeys = [
-        'startUri', 'httpClientConfig', 'verbose', 'logChannel', 'metaDataPath',
+        'startUri', 'httpClientConfig', 'verbose', 'logChannel',
     ];
 
     /**
@@ -30,7 +30,6 @@ class Config extends ValueObject implements ConfigInterface
             'httpClientConfig' => new HttpClientConfig(),
             'verbose' => self::VERBOSE_NORMAL,
             'logChannel' => 'crawler',
-            'metaDataPath' => __DIR__ . '/../runtime',
         ];
     }
 
@@ -124,23 +123,5 @@ class Config extends ValueObject implements ConfigInterface
     public function getLogChannel(): string
     {
         return (string) $this->modelGet('logChannel');
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setMetaDataPath(string $path)
-    {
-        $this->modelSet('metaDataPath', $path);
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getMetaDataPath(): string
-    {
-        return (string) $this->modelGet('metaDataPath');
     }
 }

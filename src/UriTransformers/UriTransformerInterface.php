@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Fi1a\Crawler\UriConverters;
+namespace Fi1a\Crawler\UriTransformers;
 
 use Fi1a\Crawler\ItemInterface;
 use Fi1a\Http\UriInterface;
@@ -10,10 +10,10 @@ use Fi1a\Http\UriInterface;
 /**
  * Преобразует uri из внешних адресов во внутренние
  */
-interface UriConverterInterface
+interface UriTransformerInterface
 {
     /**
      * Преобразует uri из внешних адресов во внутреннии
      */
-    public function convert(ItemInterface $item): UriInterface;
+    public function transform(ItemInterface $item): UriInterface;
 }

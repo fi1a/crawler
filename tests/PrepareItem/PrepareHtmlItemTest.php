@@ -22,24 +22,28 @@ class PrepareHtmlItemTest extends TestCase
     {
         $prepare = new PrepareHtmlItem();
 
-        $preparePage = new Item(new Uri($this->getUrl('/path/to/index.html')), 0);
+        $preparePage = new Item(new Uri($this->getUrl('/path/to/index.html')));
 
-        $preparePage->setConvertedUri(new Uri('/path/to/index.html'));
+        $preparePage->setNewItemUri(new Uri('/path/to/index.html'));
         $preparePage->setBody(file_get_contents(__DIR__ . '/../Fixtures/Server/public/path/to/index.html'));
 
         $itemCollection = new ItemCollection();
 
-        $item = new Item(new Uri($this->getUrl('/path/to/link1.html')), 0);
-        $itemCollection[] = $item;
+        $item = new Item(new Uri($this->getUrl('/path/to/link1.html')));
+        $item->setNewItemUri(new Uri('/path/to/link1.html'));
+        $itemCollection[$item->getItemUri()->getUri()] = $item;
 
-        $item = new Item(new Uri($this->getUrl('/path/link2.html')), 0);
-        $itemCollection[] = $item;
+        $item = new Item(new Uri($this->getUrl('/path/link2.html')));
+        $item->setNewItemUri(new Uri('/path/link2.html'));
+        $itemCollection[$item->getItemUri()->getUri()] = $item;
 
-        $item = new Item(new Uri($this->getUrl('/path/some/link3.html')), 0);
-        $itemCollection[] = $item;
+        $item = new Item(new Uri($this->getUrl('/path/some/link3.html')));
+        $item->setNewItemUri(new Uri('/path/some/link3.html'));
+        $itemCollection[$item->getItemUri()->getUri()] = $item;
 
-        $item = new Item(new Uri($this->getUrl('/new/link4.html')), 0);
-        $itemCollection[] = $item;
+        $item = new Item(new Uri($this->getUrl('/new/link4.html')));
+        $item->setNewItemUri(new Uri('/new/link4.html'));
+        $itemCollection[$item->getItemUri()->getUri()] = $item;
 
         $this->assertEquals(
             file_get_contents(__DIR__ . '/../Fixtures/Server/equals/path/to/index.html'),

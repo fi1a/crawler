@@ -33,6 +33,26 @@ class FileWriterTest extends TestCase
     /**
      * Записывает результат обхода в файл
      */
+    public function testWritePrefix(): void
+    {
+        $item = new Item(new Uri($this->getUrl('/index.html')), 0);
+
+        $item->setNewItemUri(new Uri('https://prefix.ru/index.html'));
+        $item->setBody(file_get_contents(__DIR__ . '/../Fixtures/Server/public/index.html'));
+        $item->setPrepareBody(file_get_contents(__DIR__ . '/../Fixtures/Server/equals/index.html'));
+
+        $writer = $this->getMockBuilder(FileWriter::class)
+            ->onlyMethods(['doWrite'])
+            ->setConstructorArgs([$this->runtimeFolder . '/web', 'https://prefix.ru/'])
+            ->getMock();
+
+        $writer->expects($this->once())->method('doWrite')->willReturn(100);
+        $this->assertTrue($writer->write($item));
+    }
+
+    /**
+     * Записывает результат обхода в файл
+     */
     public function testWriteException(): void
     {
         $writer = $this->getMockBuilder(FileWriter::class)
@@ -105,7 +125,7 @@ class FileWriterTest extends TestCase
         $this->expectException(ErrorException::class);
         $writer = new FileWriter($this->runtimeFolder . '/web');
         $item = new Item(new Uri($this->getUrl('/path/index.html')), 0);
-        $item->setConvertedUri(new Uri('/path/index.html'));
+        $item->setNewItemUri(new Uri('/path/index.html'));
         try {
             chmod($this->runtimeFolder . '/web', 0000);
             $writer->write($item);

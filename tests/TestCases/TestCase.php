@@ -26,24 +26,33 @@ class TestCase extends PHPUnitTestCase
     protected function tearDown(): void
     {
         parent::tearDown();
+        $this->deleteDir($this->runtimeFolder);
+    }
 
-        if (!is_dir($this->runtimeFolder)) {
+    /**
+     * Удаляет директорию и вложенные элементы
+     */
+    protected function deleteDir(string $path)
+    {
+        if (!is_dir($path)) {
             return;
         }
 
         $directoryIterator = new RecursiveDirectoryIterator(
-            $this->runtimeFolder,
+            $path,
             RecursiveDirectoryIterator::SKIP_DOTS
         );
         $filesIterator = new RecursiveIteratorIterator($directoryIterator, RecursiveIteratorIterator::CHILD_FIRST);
         foreach ($filesIterator as $file) {
             if ($file->isDir()) {
                 rmdir($file->getRealPath());
-            } else {
-                unlink($file->getRealPath());
+
+                continue;
             }
+
+            unlink($file->getRealPath());
         }
-        rmdir($this->runtimeFolder);
+        rmdir($path);
     }
 
     /**
@@ -61,7 +70,7 @@ class TestCase extends PHPUnitTestCase
     {
         $item = new Item(new Uri($this->getUrl('/index.html')), 0);
 
-        $item->setConvertedUri(new Uri('/index.html'));
+        $item->setNewItemUri(new Uri('/index.html'));
         $item->setBody(file_get_contents(__DIR__ . '/../Fixtures/Server/public/index.html'));
         $item->setPrepareBody(file_get_contents(__DIR__ . '/../Fixtures/Server/equals/index.html'));
 
