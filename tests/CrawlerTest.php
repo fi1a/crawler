@@ -17,6 +17,7 @@ use Fi1a\Crawler\UriCollection;
 use Fi1a\Crawler\UriParsers\HtmlUriParser;
 use Fi1a\Crawler\Writers\FileWriter;
 use Fi1a\Http\MimeInterface;
+use Fi1a\Http\Uri;
 use Fi1a\Unit\Crawler\TestCases\TestCase;
 use InvalidArgumentException;
 
@@ -261,5 +262,19 @@ class CrawlerTest extends TestCase
 
         $crawler->run();
         $this->assertEquals(0, $crawler->getItems()->getWrited()->count());
+    }
+
+    /**
+     * Метод добавления Uri
+     */
+    public function testAddUri(): void
+    {
+        $crawler = $this->getCrawler();
+        $crawler->addUri($this->getUrl('/index.html'));
+        $this->assertCount(1, $crawler->getItems());
+        $crawler->addUri($this->getUrl('/index.html'));
+        $this->assertCount(1, $crawler->getItems());
+        $crawler->addUri(new Uri($this->getUrl('/path/to/index.html')));
+        $this->assertCount(2, $crawler->getItems());
     }
 }

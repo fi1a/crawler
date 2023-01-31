@@ -10,6 +10,7 @@ use Fi1a\Crawler\Restrictions\RestrictionInterface;
 use Fi1a\Crawler\UriParsers\UriParserInterface;
 use Fi1a\Crawler\UriTransformers\UriTransformerInterface;
 use Fi1a\Crawler\Writers\WriterInterface;
+use Fi1a\Http\UriInterface;
 
 /**
  * Web Crawler
@@ -107,4 +108,13 @@ interface CrawlerInterface
      * @return $this
      */
     public function clearStorageData();
+
+    /**
+     * Добавить uri в обработку
+     *
+     * @param string|UriInterface $uri
+     *
+     * @return $this
+     */
+    public function addUri($uri);
 }
