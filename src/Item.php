@@ -29,19 +29,19 @@ class Item implements ItemInterface
     protected $reasonPhrase;
 
     /**
-     * @var bool
+     * @var bool|null
      */
-    protected $downloadSuccess = false;
+    protected $downloadStatus;
 
     /**
-     * @var bool
+     * @var bool|null
      */
-    protected $processSuccess = false;
+    protected $processStatus;
 
     /**
-     * @var bool
+     * @var bool|null
      */
-    protected $writeSuccess = false;
+    protected $writeStatus;
 
     /**
      * @var bool
@@ -120,9 +120,9 @@ class Item implements ItemInterface
     /**
      * @inheritDoc
      */
-    public function setDownloadSuccess(bool $success)
+    public function setDownloadStatus(?bool $status)
     {
-        $this->downloadSuccess = $success;
+        $this->downloadStatus = $status;
 
         return $this;
     }
@@ -130,17 +130,17 @@ class Item implements ItemInterface
     /**
      * @inheritDoc
      */
-    public function isDownloadSuccess(): bool
+    public function getDownloadStatus(): ?bool
     {
-        return $this->downloadSuccess;
+        return $this->downloadStatus;
     }
 
     /**
      * @inheritDoc
      */
-    public function setProcessSuccess(bool $success)
+    public function setProcessStatus(?bool $status)
     {
-        $this->processSuccess = $success;
+        $this->processStatus = $status;
 
         return $this;
     }
@@ -148,17 +148,17 @@ class Item implements ItemInterface
     /**
      * @inheritDoc
      */
-    public function isProcessSuccess(): bool
+    public function getProcessStatus(): ?bool
     {
-        return $this->processSuccess;
+        return $this->processStatus;
     }
 
     /**
      * @inheritDoc
      */
-    public function setWriteSuccess(bool $success)
+    public function setWriteStatus(?bool $status)
     {
-        $this->writeSuccess = $success;
+        $this->writeStatus = $status;
 
         return $this;
     }
@@ -166,9 +166,9 @@ class Item implements ItemInterface
     /**
      * @inheritDoc
      */
-    public function isWriteSuccess(): bool
+    public function getWriteStatus(): ?bool
     {
-        return $this->writeSuccess;
+        return $this->writeStatus;
     }
 
     /**
@@ -318,9 +318,9 @@ class Item implements ItemInterface
             'allow' => $this->isAllow(),
             'statusCode' => $this->getStatusCode(),
             'reasonPhrase' => $this->getReasonPhrase(),
-            'downloadSuccess' => $this->isDownloadSuccess(),
-            'processSuccess' => $this->isProcessSuccess(),
-            'writeSuccess' => $this->isWriteSuccess(),
+            'downloadStatus' => $this->getDownloadStatus(),
+            'processStatus' => $this->getProcessStatus(),
+            'writeStatus' => $this->getWriteStatus(),
             'contentType' => $this->getContentType(),
             'newItemUri' =>  $newItemUri ? $newItemUri->getUri() : null,
         ];
@@ -344,14 +344,14 @@ class Item implements ItemInterface
         if (isset($fields['reasonPhrase']) && is_string($fields['reasonPhrase'])) {
             $item->setReasonPhrase($fields['reasonPhrase']);
         }
-        if (isset($fields['downloadSuccess']) && is_bool($fields['downloadSuccess'])) {
-            $item->setDownloadSuccess($fields['downloadSuccess']);
+        if (isset($fields['downloadStatus']) && is_bool($fields['downloadStatus'])) {
+            $item->setDownloadStatus($fields['downloadStatus']);
         }
-        if (isset($fields['processSuccess']) && is_bool($fields['processSuccess'])) {
-            $item->setProcessSuccess($fields['processSuccess']);
+        if (isset($fields['processStatus']) && is_bool($fields['processStatus'])) {
+            $item->setProcessStatus($fields['processStatus']);
         }
-        if (isset($fields['writeSuccess']) && is_bool($fields['writeSuccess'])) {
-            $item->setWriteSuccess($fields['writeSuccess']);
+        if (isset($fields['writeStatus']) && is_bool($fields['writeStatus'])) {
+            $item->setWriteStatus($fields['writeStatus']);
         }
         if (isset($fields['contentType']) && is_string($fields['contentType'])) {
             $item->setContentType($fields['contentType']);

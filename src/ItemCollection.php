@@ -45,7 +45,7 @@ class ItemCollection extends Collection implements ItemCollectionInterface
         return $this->filter(function ($item) {
             assert($item instanceof ItemInterface);
 
-            return $item->isDownloadSuccess();
+            return $item->getDownloadStatus() === true;
         });
     }
 
@@ -57,7 +57,7 @@ class ItemCollection extends Collection implements ItemCollectionInterface
         return $this->filter(function ($item) {
             assert($item instanceof ItemInterface);
 
-            return $item->isProcessSuccess();
+            return $item->getProcessStatus() === true;
         });
     }
 
@@ -69,7 +69,7 @@ class ItemCollection extends Collection implements ItemCollectionInterface
         return $this->filter(function ($item) {
             assert($item instanceof ItemInterface);
 
-            return $item->isWriteSuccess();
+            return $item->getWriteStatus() === true;
         });
     }
 }
