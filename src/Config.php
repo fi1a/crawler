@@ -9,6 +9,7 @@ use Fi1a\Http\Uri;
 use Fi1a\Http\UriInterface;
 use Fi1a\HttpClient\Config as HttpClientConfig;
 use Fi1a\HttpClient\ConfigInterface as HttpClientConfigInterface;
+use Fi1a\HttpClient\Handlers\StreamHandler;
 use InvalidArgumentException;
 
 /**
@@ -17,7 +18,7 @@ use InvalidArgumentException;
 class Config extends ValueObject implements ConfigInterface
 {
     protected $modelKeys = [
-        'startUri', 'httpClientConfig', 'verbose', 'logChannel',
+        'startUri', 'httpClientConfig', 'httpClientHandler', 'verbose', 'logChannel',
     ];
 
     /**
@@ -28,6 +29,7 @@ class Config extends ValueObject implements ConfigInterface
         return [
             'startUri' => [],
             'httpClientConfig' => new HttpClientConfig(),
+            'httpClientHandler' => StreamHandler::class,
             'verbose' => self::VERBOSE_NORMAL,
             'logChannel' => 'crawler',
         ];
@@ -42,7 +44,7 @@ class Config extends ValueObject implements ConfigInterface
         if (!($startUri instanceof UriInterface)) {
             $startUri = new Uri($startUri);
         }
-        if (!$startUri->getHost()) {
+        if (!$startUri->host()) {
             throw new InvalidArgumentException('Не задан хост');
         }
         $uri[] = $startUri;
@@ -81,6 +83,24 @@ class Config extends ValueObject implements ConfigInterface
         $config = $this->modelGet('httpClientConfig');
 
         return $config;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setHttpClientHandler(string $handler)
+    {
+        $this->modelSet('httpClientHandler', $handler);
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getHttpClientHandler(): string
+    {
+        return (string) $this->modelGet('httpClientHandler');
     }
 
     /**

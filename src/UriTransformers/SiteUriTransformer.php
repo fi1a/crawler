@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Fi1a\Crawler\UriTransformers;
 
 use Fi1a\Crawler\ItemInterface;
+use Fi1a\Http\Mime;
 use Fi1a\Http\UriInterface;
 
 /**
@@ -50,8 +51,31 @@ class SiteUriTransformer implements UriTransformerInterface
                 $object = $object->withPort($parsed['port']);
             }
             if (isset($parsed['path'])) {
-                $object = $object->withPath(rtrim($parsed['path'], '/') . '/' . ltrim($object->getPath(), '/'));
+                $object = $object->withPath(rtrim($parsed['path'], '/')
+                    . '/' . ltrim($object->path(), '/'));
             }
+        }
+
+        $basename = basename($object->path());
+        if (!$basename || !preg_match('/^(.+)\.(.+)$/i', $basename)) {
+            $object = $object->withPath(rtrim($object->path(), '/') . '/index.html');
+        }
+
+        $pathInfo = pathinfo($object->path());
+        if (
+            (!isset($pathInfo['extension']) || $pathInfo['extension'] !== 'html')
+            && $item->getContentType() === Mime::HTML
+        ) {
+            $object = $object->withPath($object->normalizedBasePath() . $pathInfo['filename'] . '.html');
+        }
+
+        if ($object->query()) {
+            $pathInfo = pathinfo($object->path());
+            $object = $object->withPath(
+                $object->normalizedBasePath() . $pathInfo['filename'] . '--' . urldecode($object->query())
+                    . (isset($pathInfo['extension']) && $pathInfo['extension'] ? '.' . $pathInfo['extension'] : '')
+            )
+                ->withQueryParams([]);
         }
 
         return $object;

@@ -28,6 +28,7 @@ use Fi1a\Crawler\UriParsers\UriParserInterface;
 use Fi1a\Crawler\UriTransformers\SiteUriTransformer;
 use Fi1a\Crawler\UriTransformers\UriTransformerInterface;
 use Fi1a\Crawler\Writers\WriterInterface;
+use Fi1a\Http\Mime;
 use Fi1a\Http\Uri;
 use Fi1a\Http\UriInterface;
 use Fi1a\HttpClient\HttpClient;
@@ -78,14 +79,14 @@ class Crawler implements CrawlerInterface
     protected $uriTransformer;
 
     /**
-     * @var PrepareItemInterface|null
+     * @var array<string, PrepareItemInterface>
      */
-    protected $prepareItem;
+    protected $prepareItems = [];
 
     /**
-     * @var WriterInterface|null
+     * @var array<string, WriterInterface>
      */
-    protected $writer;
+    protected $writers = [];
 
     /**
      * @var ConsoleOutputInterface
@@ -115,7 +116,10 @@ class Crawler implements CrawlerInterface
     ) {
         $this->config = $config;
         $this->restrictions = new RestrictionCollection();
-        $this->httpClient = new HttpClient($this->config->getHttpClientConfig());
+        $this->httpClient = new HttpClient(
+            $this->config->getHttpClientConfig(),
+            $this->config->getHttpClientHandler()
+        );
         if ($output === null) {
             $output = new ConsoleOutput(new Formatter());
         }
@@ -143,7 +147,7 @@ class Crawler implements CrawlerInterface
         if (!count($this->config->getStartUri())) {
             throw new InvalidArgumentException('Не задана точка входа ($config->addStartUrl())');
         }
-        if (!$this->writer) {
+        if (!count($this->writers)) {
             throw new InvalidArgumentException('Не задан класс записывающий результат обхода');
         }
 
@@ -200,7 +204,7 @@ class Crawler implements CrawlerInterface
      */
     public function write()
     {
-        if (!$this->writer) {
+        if (!count($this->writers)) {
             throw new InvalidArgumentException('Не задан обработчик записывающий результат');
         }
         $this->output->setVerbose($this->config->getVerbose());
@@ -249,7 +253,7 @@ class Crawler implements CrawlerInterface
      */
     public function setUriParser(UriParserInterface $parser, ?string $mime = null)
     {
-        $this->uriParsers[$this->getUriParserMime($mime)] = $parser;
+        $this->uriParsers[$this->getMime($mime)] = $parser;
 
         return $this;
     }
@@ -259,7 +263,7 @@ class Crawler implements CrawlerInterface
      */
     public function hasUriParser(?string $mime = null): bool
     {
-        return array_key_exists($this->getUriParserMime($mime), $this->uriParsers);
+        return array_key_exists($this->getMime($mime), $this->uriParsers);
     }
 
     /**
@@ -271,7 +275,7 @@ class Crawler implements CrawlerInterface
             return $this;
         }
 
-        unset($this->uriParsers[$this->getUriParserMime($mime)]);
+        unset($this->uriParsers[$this->getMime($mime)]);
 
         return $this;
     }
@@ -289,9 +293,9 @@ class Crawler implements CrawlerInterface
     /**
      * @inheritDoc
      */
-    public function setPrepareItem(PrepareItemInterface $prepareItem)
+    public function setPrepareItem(PrepareItemInterface $prepareItem, ?string $mime = null)
     {
-        $this->prepareItem = $prepareItem;
+        $this->prepareItems[$this->getMime($mime)] = $prepareItem;
 
         return $this;
     }
@@ -299,9 +303,53 @@ class Crawler implements CrawlerInterface
     /**
      * @inheritDoc
      */
-    public function setWriter(WriterInterface $writer)
+    public function hasPrepareItem(?string $mime = null): bool
     {
-        $this->writer = $writer;
+        return array_key_exists($this->getMime($mime), $this->prepareItems);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function removePrepareItem(?string $mime = null)
+    {
+        if (!$this->hasPrepareItem($mime)) {
+            return $this;
+        }
+
+        unset($this->prepareItems[$this->getMime($mime)]);
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setWriter(WriterInterface $writer, ?string $mime = null)
+    {
+        $this->writers[$this->getMime($mime)] = $writer;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function hasWriter(?string $mime = null): bool
+    {
+        return array_key_exists($this->getMime($mime), $this->writers);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function removeWriter(?string $mime = null)
+    {
+        if (!$this->hasWriter($mime)) {
+            return $this;
+        }
+
+        unset($this->writers[$this->getMime($mime)]);
 
         return $this;
     }
@@ -332,7 +380,7 @@ class Crawler implements CrawlerInterface
         );
         $this->output->writeln(
             '    Получен uri {{|unescape}}',
-            [$uri->getUri()],
+            [$uri->maskedUri()],
             null,
             OutputInterface::VERBOSE_HIGHT
         );
@@ -372,7 +420,7 @@ class Crawler implements CrawlerInterface
     /**
      * Возвращатет mime тип для парсера uri
      */
-    protected function getUriParserMime(?string $mime = null): string
+    protected function getMime(?string $mime = null): string
     {
         if (!$mime) {
             return '*';
@@ -388,11 +436,11 @@ class Crawler implements CrawlerInterface
     {
         $existing = [];
         foreach ($this->config->getStartUri() as $startUrl) {
-            $uri = $startUrl->replace($startUrl->getNormalizedBasePath());
-            if (in_array($uri->getUrl(), $existing)) {
+            $uri = $startUrl->replace($startUrl->normalizedBasePath());
+            if (in_array($uri->url(), $existing)) {
                 continue;
             }
-            $existing[] = $uri->getUrl();
+            $existing[] = $uri->url();
 
             $this->addRestriction(new UriRestriction($uri));
         }
@@ -423,8 +471,8 @@ class Crawler implements CrawlerInterface
      */
     protected function addDefaultPrepareItem(): void
     {
-        if (!$this->prepareItem) {
-            $this->setPrepareItem(new PrepareHtmlItem());
+        if (!count($this->prepareItems)) {
+            $this->setPrepareItem(new PrepareHtmlItem(), Mime::HTML);
         }
     }
 
@@ -435,7 +483,7 @@ class Crawler implements CrawlerInterface
     {
         $logUri = [];
         foreach ($this->config->getStartUri() as $startUri) {
-            $logUri[] = $startUri->getUri();
+            $logUri[] = $startUri->uri();
         }
         $this->logger->debug('Начальные uri', [], $logUri);
 
@@ -449,7 +497,7 @@ class Crawler implements CrawlerInterface
         foreach ($this->config->getStartUri() as $startUri) {
             $this->output->writeln(
                 '    Получен uri {{|unescape}}',
-                [$startUri->getUri()],
+                [$startUri->maskedUri()],
                 null,
                 OutputInterface::VERBOSE_HIGHT
             );
@@ -463,11 +511,11 @@ class Crawler implements CrawlerInterface
      */
     protected function addItemByUri(UriInterface $uri): bool
     {
-        if ($this->items->has($uri->getUri())) {
+        if ($this->items->has($uri->uri())) {
             $this->logger->debug(
                 'Uri {{uri}} уже добавлен',
                 [
-                    'uri' => $uri->getUri(),
+                    'uri' => $uri->maskedUri(),
                 ]
             );
 
@@ -476,27 +524,30 @@ class Crawler implements CrawlerInterface
 
         $item = new Item($uri);
 
-        $item->setAllow(true);
-
+        $allow = false;
         /** @var RestrictionInterface $restriction */
         foreach ($this->restrictions as $restriction) {
-            if (!$restriction->isAllow($uri)) {
-                $this->output->writeln(
-                    '        <color=blue>- Запрещен обход для этого адреса</>',
-                    [],
-                    null,
-                    OutputInterface::VERBOSE_HIGHTEST
-                );
-                $this->logger->debug(
-                    'Запрещен обход для этого адреса: {{uri}}',
-                    [
-                        'uri' => $uri->getUri(),
-                    ]
-                );
-
-                $item->setAllow(false);
+            if ($restriction->isAllow($uri)) {
+                $allow = true;
             }
         }
+
+        if (!$allow) {
+            $this->output->writeln(
+                '        <color=blue>- Запрещен обход для этого адреса</>',
+                [],
+                null,
+                OutputInterface::VERBOSE_HIGHTEST
+            );
+            $this->logger->debug(
+                'Запрещен обход для этого адреса: {{uri}}',
+                [
+                    'uri' => $uri->maskedUri(),
+                ]
+            );
+        }
+
+        $item->setAllow($allow);
 
         if ($item->isAllow()) {
             $this->output->writeln(
@@ -508,13 +559,13 @@ class Crawler implements CrawlerInterface
             $this->logger->debug(
                 'Добавлен в очередь: {{uri}}',
                 [
-                    'uri' => $uri->getUri(),
+                    'uri' => $uri->maskedUri(),
                 ]
             );
         }
 
         $this->queue->addEnd($item);
-        $this->items[$uri->getUri()] = $item;
+        $this->items[$uri->uri()] = $item;
 
         return true;
     }
@@ -526,10 +577,10 @@ class Crawler implements CrawlerInterface
      */
     protected function uriParse(ItemInterface $item): void
     {
-        $parser = $this->uriParsers[$this->getUriParserMime()];
+        $parser = $this->uriParsers[$this->getMime()];
         $mime = $item->getContentType();
         if ($mime && $this->hasUriParser($mime)) {
-            $parser = $this->uriParsers[$this->getUriParserMime($mime)];
+            $parser = $this->uriParsers[$this->getMime($mime)];
         }
 
         $collection = $parser->parse($item);
@@ -539,7 +590,7 @@ class Crawler implements CrawlerInterface
 
             $this->output->writeln(
                 '    Получен uri {{|unescape}}',
-                [$uri->getUri()],
+                [$uri->maskedUri()],
                 null,
                 OutputInterface::VERBOSE_HIGHTEST
             );
@@ -547,8 +598,8 @@ class Crawler implements CrawlerInterface
             $this->logger->debug(
                 'Получен uri {{uri}} из {{itemUri}}',
                 [
-                    'uri' => $uri->getUri(),
-                    'itemUri' => $item->getItemUri()->getUri(),
+                    'uri' => $uri->maskedUri(),
+                    'itemUri' => $item->getItemUri()->maskedUri(),
                 ]
             );
 
@@ -623,7 +674,7 @@ class Crawler implements CrawlerInterface
                 [
                     'index' => $index,
                     'count' => $this->items->count(),
-                    'uri' => $item->getItemUri()->getUri(),
+                    'uri' => $item->getItemUri()->maskedUri(),
                 ],
                 null,
                 OutputInterface::VERBOSE_HIGHT
@@ -638,7 +689,7 @@ class Crawler implements CrawlerInterface
                 [
                     'index' => $index,
                     'count' => $this->items->count(),
-                    'uri' => $item->getItemUri()->getUri(),
+                    'uri' => $item->getItemUri()->maskedUri(),
                 ],
                 null,
                 OutputInterface::VERBOSE_HIGHT
@@ -664,7 +715,7 @@ class Crawler implements CrawlerInterface
             [
                 'index' => $index,
                 'count' => $this->items->count(),
-                'uri' => $item->getItemUri()->getUri(),
+                'uri' => $item->getItemUri()->maskedUri(),
             ],
             null,
             OutputInterface::VERBOSE_HIGHT
@@ -672,13 +723,14 @@ class Crawler implements CrawlerInterface
 
         $this->output->writeln(
             '    GET {{uri}}',
-            ['uri' => $item->getItemUri()->getUri()],
+            ['uri' => $item->getItemUri()->maskedUri()],
             null,
             OutputInterface::VERBOSE_HIGHT
         );
 
-        $this->logger->info('GET {{uri}}', ['uri' => $item->getItemUri()->getUri()]);
-        $response = $this->httpClient->get($item->getItemUri()->getUri());
+        $this->logger->info('GET {{uri}}', ['uri' => $item->getItemUri()->maskedUri()]);
+
+        $response = $this->httpClient->get($item->getItemUri()->uri());
 
         $item->setStatusCode($response->getStatusCode())
             ->setReasonPhrase($response->getReasonPhrase())
@@ -692,7 +744,7 @@ class Crawler implements CrawlerInterface
             $item->getDownloadStatus() ? LevelInterface::INFO : LevelInterface::WARNING,
             'Item {{uri}}: statusCode={{statusCode}} contentType={{contentType}}',
             [
-                'uri' => $item->getItemUri()->getUri(),
+                'uri' => $item->getItemUri()->maskedUri(),
                 'statusCode' => $item->getStatusCode(),
                 'contentType' => $item->getContentType(),
             ]
@@ -728,7 +780,7 @@ class Crawler implements CrawlerInterface
                 [
                     'index' => $index,
                     'count' => $this->items->count(),
-                    'uri' => $item->getItemUri()->getUri(),
+                    'uri' => $item->getItemUri()->maskedUri(),
                 ],
                 null,
                 OutputInterface::VERBOSE_HIGHT
@@ -742,7 +794,7 @@ class Crawler implements CrawlerInterface
             [
                 'index' => $index,
                 'count' => $this->items->count(),
-                'uri' => $item->getItemUri()->getUri(),
+                'uri' => $item->getItemUri()->maskedUri(),
             ],
             null,
             OutputInterface::VERBOSE_HIGHT
@@ -752,7 +804,7 @@ class Crawler implements CrawlerInterface
         $item->setNewItemUri($newItemUri)
             ->setProcessStatus(true);
 
-        if ($newItemUri->getUri() === $item->getItemUri()->getUri()) {
+        if ($newItemUri->uri() === $item->getItemUri()->uri()) {
             $this->output->writeln(
                 '    Без преобразования',
                 [],
@@ -762,7 +814,7 @@ class Crawler implements CrawlerInterface
             $this->logger->info(
                 '{{uri}} без преобразования',
                 [
-                    'uri' => $item->getItemUri()->getUri(),
+                    'uri' => $item->getItemUri()->maskedUri(),
                 ]
             );
 
@@ -771,15 +823,15 @@ class Crawler implements CrawlerInterface
 
         $this->output->writeln(
             '    Преобразован в {{|unescape}}',
-            [$newItemUri->getUri()],
+            [$newItemUri->maskedUri()],
             null,
             OutputInterface::VERBOSE_HIGHTEST
         );
         $this->logger->info(
             '{{uri}} преобразован в {{newUri}}',
             [
-                'uri' => $item->getItemUri()->getUri(),
-                'newUri' => $newItemUri->getUri(),
+                'uri' => $item->getItemUri()->maskedUri(),
+                'newUri' => $newItemUri->maskedUri(),
             ]
         );
     }
@@ -795,7 +847,7 @@ class Crawler implements CrawlerInterface
                 [
                     'index' => $index,
                     'count' => $this->items->count(),
-                    'uri' => $item->getItemUri()->getUri(),
+                    'uri' => $item->getItemUri()->maskedUri(),
                 ],
                 null,
                 OutputInterface::VERBOSE_HIGHT
@@ -810,7 +862,7 @@ class Crawler implements CrawlerInterface
                 [
                     'index' => $index,
                     'count' => $this->items->count(),
-                    'uri' => $item->getItemUri()->getUri(),
+                    'uri' => $item->getItemUri()->maskedUri(),
                 ],
                 null,
                 OutputInterface::VERBOSE_HIGHT
@@ -824,7 +876,7 @@ class Crawler implements CrawlerInterface
             [
                 'index' => $index,
                 'count' => $this->items->count(),
-                'uri' => $item->getItemUri()->getUri(),
+                'uri' => $item->getItemUri()->maskedUri(),
             ],
             null,
             OutputInterface::VERBOSE_HIGHT
@@ -836,10 +888,26 @@ class Crawler implements CrawlerInterface
             $body = $this->storage->getBody($item);
             if ($body !== false) {
                 $item->setBody($body);
-                if ($this->prepareItem) {
-                    $item->setPrepareBody($this->prepareItem->prepare($item, $this->items));
+                $item->setPrepareBody($body);
+                if (count($this->prepareItems)) {
+                    $prepareItem = null;
+                    if ($this->hasPrepareItem($this->getMime())) {
+                        $prepareItem = $this->prepareItems[$this->getMime()];
+                    }
+                    $mime = $item->getContentType();
+                    if ($mime && $this->hasPrepareItem($mime)) {
+                        $prepareItem = $this->prepareItems[$this->getMime($mime)];
+                    }
+                    if ($prepareItem) {
+                        $item->setPrepareBody($prepareItem->prepare($item, $this->items));
+                    }
                 }
-                if ($this->writer && $this->writer->write($item)) {
+                $writer = $this->writers[$this->getMime()];
+                $mime = $item->getContentType();
+                if ($mime && $this->hasWriter($mime)) {
+                    $writer = $this->writers[$this->getMime($mime)];
+                }
+                if ($writer->write($item)) {
                     $item->setWriteStatus(true);
 
                     $this->output->writeln(
@@ -851,7 +919,7 @@ class Crawler implements CrawlerInterface
                     $this->logger->info(
                         '{{uri}} записан',
                         [
-                            'uri' => $item->getItemUri()->getUri(),
+                            'uri' => $item->getItemUri()->maskedUri(),
                         ]
                     );
 
@@ -868,7 +936,7 @@ class Crawler implements CrawlerInterface
                 $this->logger->warning(
                     '{{uri}} не записан. Не удалось записать',
                     [
-                        'uri' => $item->getItemUri()->getUri(),
+                        'uri' => $item->getItemUri()->maskedUri(),
                     ]
                 );
 
@@ -885,7 +953,7 @@ class Crawler implements CrawlerInterface
             $this->logger->warning(
                 '{{uri}} не записан. Не получено тело ответа',
                 [
-                    'uri' => $item->getItemUri()->getUri(),
+                    'uri' => $item->getItemUri()->maskedUri(),
                 ]
             );
 
@@ -904,7 +972,7 @@ class Crawler implements CrawlerInterface
         $this->logger->warning(
             '{{uri}} не записан Status={{statusCode}} ({{reasonPhrase}})',
             [
-                'uri' => $item->getItemUri()->getUri(),
+                'uri' => $item->getItemUri()->maskedUri(),
                 'statusCode' => $item->getStatusCode(),
                 'reasonPhrase' => $item->getReasonPhrase(),
             ]

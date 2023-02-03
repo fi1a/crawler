@@ -277,14 +277,14 @@ class Item implements ItemInterface
      */
     public function getAbsoluteUri(UriInterface $uri): UriInterface
     {
-        if (!$uri->getHost()) {
-            $uri = $uri->withScheme($this->getItemUri()->getScheme())
-                ->withHost($this->getItemUri()->getHost())
-                ->withPort($this->getItemUri()->getPort());
+        if (!$uri->host()) {
+            $uri = $uri->withScheme($this->getItemUri()->scheme())
+                ->withHost($this->getItemUri()->host())
+                ->withPort($this->getItemUri()->port());
         }
-        if (mb_substr($uri->getPath(), 0, 1) !== '/') {
+        if (mb_substr($uri->path(), 0, 1) !== '/') {
             $tokens = [];
-            $parts = explode('/', $this->getItemUri()->getNormalizedBasePath() . $uri->getPath());
+            $parts = explode('/', $this->getItemUri()->normalizedBasePath() . $uri->path());
             foreach ($parts as $part) {
                 if (!$part) {
                     continue;
@@ -314,7 +314,7 @@ class Item implements ItemInterface
         $newItemUri = $this->getNewItemUri();
 
         return [
-            'itemUri' => $this->getItemUri()->getUri(),
+            'itemUri' => $this->getItemUri()->uri(),
             'allow' => $this->isAllow(),
             'statusCode' => $this->getStatusCode(),
             'reasonPhrase' => $this->getReasonPhrase(),
@@ -322,7 +322,7 @@ class Item implements ItemInterface
             'processStatus' => $this->getProcessStatus(),
             'writeStatus' => $this->getWriteStatus(),
             'contentType' => $this->getContentType(),
-            'newItemUri' =>  $newItemUri ? $newItemUri->getUri() : null,
+            'newItemUri' =>  $newItemUri ? $newItemUri->uri() : null,
         ];
     }
 

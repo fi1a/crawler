@@ -132,7 +132,7 @@ class ItemTest extends TestCase
 
         $this->assertEquals(
             'https://127.0.0.1:3000/some/path.html',
-            $item->getAbsoluteUri(new Uri('/some/path.html'))->getUri()
+            $item->getAbsoluteUri(new Uri('/some/path.html'))->uri()
         );
     }
 
@@ -145,12 +145,12 @@ class ItemTest extends TestCase
 
         $this->assertEquals(
             'https://127.0.0.1:3000/some/path.html',
-            $item->getAbsoluteUri(new Uri('../path.html'))->getUri()
+            $item->getAbsoluteUri(new Uri('../path.html'))->uri()
         );
 
         $this->assertEquals(
             'https://127.0.0.1:3000/path.html',
-            $item->getAbsoluteUri(new Uri('../../path.html'))->getUri()
+            $item->getAbsoluteUri(new Uri('../../path.html'))->uri()
         );
     }
 
@@ -223,7 +223,7 @@ class ItemTest extends TestCase
     public function testFromArray(): void
     {
         $item = Item::fromArray($this->itemArray);
-        $this->assertEquals('https://127.0.0.1:3000/index.html', $item->getItemUri()->getUri());
+        $this->assertEquals('https://127.0.0.1:3000/index.html', $item->getItemUri()->uri());
         $this->assertTrue($item->isAllow());
         $this->assertEquals(200, $item->getStatusCode());
         $this->assertEquals('OK', $item->getReasonPhrase());
@@ -231,7 +231,7 @@ class ItemTest extends TestCase
         $this->assertTrue($item->getProcessStatus());
         $this->assertTrue($item->getWriteStatus());
         $this->assertEquals('*/*', $item->getContentType());
-        $this->assertEquals('https://127.0.0.1:3000/index.html', $item->getNewItemUri()->getUri());
+        $this->assertEquals('https://127.0.0.1:3000/index.html', $item->getNewItemUri()->uri());
     }
 
     /**

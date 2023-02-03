@@ -51,6 +51,18 @@ interface ConfigInterface extends ValueObjectInterface
     public function getHttpClientConfig(): HttpClientConfigInterface;
 
     /**
+     * Установить обработчик запросов
+     *
+     * @return $this
+     */
+    public function setHttpClientHandler(string $handler);
+
+    /**
+     * Вернуть обработчик запросов
+     */
+    public function getHttpClientHandler(): string;
+
+    /**
      * Установить уровень подробности вывода
      *
      * @return $this

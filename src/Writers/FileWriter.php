@@ -94,11 +94,12 @@ class FileWriter implements WriterInterface
             throw new ErrorException(
                 sprintf(
                     'Пустой преобразованный uri для ссылки (%s)',
-                    htmlspecialchars($item->getItemUri()->getUri())
+                    htmlspecialchars($item->getItemUri()->uri())
                 )
             );
         }
-        $uri = $newItemUri->getUri();
+
+        $uri = $newItemUri->uri();
 
         if ($this->urlPrefix && mb_stripos($uri, $this->urlPrefix) === 0) {
             $uri = mb_substr($uri, mb_strlen($this->urlPrefix));
