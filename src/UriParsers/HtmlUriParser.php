@@ -9,6 +9,7 @@ use Fi1a\Crawler\UriCollection;
 use Fi1a\Crawler\UriCollectionInterface;
 use Fi1a\Http\Uri;
 use Fi1a\SimpleQuery\SimpleQuery;
+use Fi1a\SimpleQuery\SimpleQueryInterface;
 use InvalidArgumentException;
 
 /**
@@ -21,18 +22,57 @@ class HtmlUriParser implements UriParserInterface
      */
     public function parse(ItemInterface $item): UriCollectionInterface
     {
+        $sq = new SimpleQuery((string) $item->getBody());
+        $collection = $this->parseLinks($sq);
+        $collection->exchangeArray(
+            array_merge($collection->getArrayCopy(), $this->parseImages($sq)->getArrayCopy())
+        );
+
+        return $collection;
+    }
+
+    /**
+     * Парсит ссылки
+     */
+    protected function parseLinks(SimpleQueryInterface $sq): UriCollectionInterface
+    {
         $collection = new UriCollection();
 
-        $sq = new SimpleQuery((string) $item->getBody());
         $links = $sq('a');
         /** @var \DOMElement $link */
         foreach ($links as $link) {
-            $href = (string) $sq($link)->attr('href');
-            if (!$href) {
+            $href = $sq($link)->attr('href');
+            if (!is_string($href) || !$href) {
                 continue;
             }
             try {
                 $uri = new Uri($href);
+            } catch (InvalidArgumentException $exception) {
+                continue;
+            }
+
+            $collection[] = $uri;
+        }
+
+        return $collection;
+    }
+
+    /**
+     * Парсит изображения
+     */
+    protected function parseImages(SimpleQueryInterface $sq): UriCollectionInterface
+    {
+        $collection = new UriCollection();
+
+        $images = $sq('img');
+        /** @var \DOMElement $image */
+        foreach ($images as $image) {
+            $src = $sq($image)->attr('src');
+            if (!is_string($src) || !$src) {
+                continue;
+            }
+            try {
+                $uri = new Uri($src);
             } catch (InvalidArgumentException $exception) {
                 continue;
             }

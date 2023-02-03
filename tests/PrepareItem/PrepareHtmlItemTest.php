@@ -63,6 +63,10 @@ class PrepareHtmlItemTest extends TestCase
         $item->setNewItemUri(new Uri('/path/to/files/for-test.docx'));
         $itemCollection[$item->getItemUri()->uri()] = $item;
 
+        $item = new Item(new Uri($this->getUrl('/path/to/images/for-test.jpeg')));
+        $item->setNewItemUri(new Uri('/path/to/images/for-test.jpeg'));
+        $itemCollection[$item->getItemUri()->uri()] = $item;
+
         $this->assertEquals(
             file_get_contents(__DIR__ . '/../Fixtures/Server/equals/path/to/index.html'),
             $prepare->prepare($preparePage, $itemCollection)
