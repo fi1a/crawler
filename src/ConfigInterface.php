@@ -85,4 +85,16 @@ interface ConfigInterface extends ValueObjectInterface
      * Вернуть канал логирования
      */
     public function getLogChannel(): string;
+
+    /**
+     * Установить параметр определяющий через какое новое кол-во элементов сохранять элементы в хранилище
+     *
+     * @return $this
+     */
+    public function setSaveAfterQuantity(int $quantity);
+
+    /**
+     * Возвращает параметр определяющий через какое новое кол-во элементов сохранять элементы в хранилище
+     */
+    public function getSaveAfterQuantity(): int;
 }

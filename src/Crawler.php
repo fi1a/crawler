@@ -633,9 +633,13 @@ class Crawler implements CrawlerInterface
             $progressbar->setMaxSteps($this->items->count());
             $progressbar->increment();
             $progressbar->display();
+
+            if ($this->config->getSaveAfterQuantity() > 0 && $index % $this->config->getSaveAfterQuantity() === 0) {
+                $this->saveStorage($this->items);
+            }
         }
 
-        $this->storage->save($this->items);
+        $this->saveStorage($this->items);
 
         $progressbar->finish();
 
@@ -661,6 +665,39 @@ class Crawler implements CrawlerInterface
         $panel->display();
 
         $this->output->writeln();
+    }
+
+    /**
+     * Сохранение элементов в хранилище
+     */
+    protected function saveStorage(ItemCollectionInterface $items): void
+    {
+        $this->logger->debug(
+            '({{count}}) Старт сохранения элементов',
+            [
+                'count' => $items->count(),
+            ],
+        );
+        $startTime = microtime(true);
+        $this->storage->save($items);
+        $time = microtime(true) - $startTime;
+        $this->output->writeln();
+        $this->output->writeln(
+            '({{count}}) Сохранения элементов / {{time|time|escape}}',
+            [
+                'count' => $items->count(),
+                'time' => $time,
+            ],
+            null,
+            OutputInterface::VERBOSE_DEBUG
+        );
+        $this->logger->debug(
+            '({{count}}) Сохранения элементов завершено / {{time|time}}',
+            [
+                'count' => $items->count(),
+                'time' => $time,
+            ],
+        );
     }
 
     /**
