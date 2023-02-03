@@ -18,7 +18,7 @@ use InvalidArgumentException;
 class Config extends ValueObject implements ConfigInterface
 {
     protected $modelKeys = [
-        'startUri', 'httpClientConfig', 'httpClientHandler', 'verbose', 'logChannel',
+        'startUri', 'httpClientConfig', 'httpClientHandler', 'verbose', 'logChannel', 'saveAfterQuantity',
     ];
 
     /**
@@ -32,6 +32,7 @@ class Config extends ValueObject implements ConfigInterface
             'httpClientHandler' => StreamHandler::class,
             'verbose' => self::VERBOSE_NORMAL,
             'logChannel' => 'crawler',
+            'saveAfterQuantity' => 10,
         ];
     }
 
@@ -143,5 +144,26 @@ class Config extends ValueObject implements ConfigInterface
     public function getLogChannel(): string
     {
         return (string) $this->modelGet('logChannel');
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setSaveAfterQuantity(int $quantity)
+    {
+        if ($quantity < -1) {
+            throw new InvalidArgumentException('Кол-во должно быть больше или равно -1');
+        }
+        $this->modelSet('saveAfterQuantity', $quantity);
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getSaveAfterQuantity(): int
+    {
+        return (int) $this->modelGet('saveAfterQuantity');
     }
 }

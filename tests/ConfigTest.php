@@ -8,6 +8,8 @@ use Fi1a\Crawler\Config;
 use Fi1a\Crawler\ConfigInterface;
 use Fi1a\HttpClient\Config as HttpClientConfig;
 use Fi1a\HttpClient\ConfigInterface as HttpClientConfigInterface;
+use Fi1a\HttpClient\Handlers\CurlHandler;
+use Fi1a\HttpClient\Handlers\StreamHandler;
 use Fi1a\Unit\Crawler\TestCases\TestCase;
 use InvalidArgumentException;
 
@@ -50,6 +52,17 @@ class ConfigTest extends TestCase
     }
 
     /**
+     * Обработчик запросов
+     */
+    public function testHttpClientHandler(): void
+    {
+        $config = new Config();
+        $this->assertEquals(StreamHandler::class, $config->getHttpClientHandler());
+        $config->setHttpClientHandler(CurlHandler::class);
+        $this->assertEquals(CurlHandler::class, $config->getHttpClientHandler());
+    }
+
+    /**
      * Уровень подробности
      */
     public function testVerbose(): void
@@ -89,5 +102,29 @@ class ConfigTest extends TestCase
         $this->assertEquals('crawler', $config->getLogChannel());
         $config->setLogChannel('channel1');
         $this->assertEquals('channel1', $config->getLogChannel());
+    }
+
+    /**
+     * Параметр определяющий через какое новое кол-во элементов сохранять элементы в хранилище
+     */
+    public function testSaveAfterQuantity(): void
+    {
+        $config = new Config();
+        $this->assertEquals(10, $config->getSaveAfterQuantity());
+        $config->setSaveAfterQuantity(20);
+        $this->assertEquals(20, $config->getSaveAfterQuantity());
+        $config->setSaveAfterQuantity(-1);
+        $this->assertEquals(-1, $config->getSaveAfterQuantity());
+    }
+
+    /**
+     * Параметр определяющий через какое новое кол-во элементов сохранять элементы в хранилище (исключение
+     * при установке значения)
+     */
+    public function testSaveAfterQuantityException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $config = new Config();
+        $config->setSaveAfterQuantity(-10);
     }
 }
