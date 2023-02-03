@@ -23,85 +23,46 @@ class HtmlUriParser implements UriParserInterface
     public function parse(ItemInterface $item): UriCollectionInterface
     {
         $sq = new SimpleQuery((string) $item->getBody());
-        $collection = $this->parseLinks($sq);
+
+        $collection = $this->parseNode('a', 'href', $sq);
         $collection->exchangeArray(
-            array_merge($collection->getArrayCopy(), $this->parseImages($sq)->getArrayCopy())
+            array_merge(
+                $collection->getArrayCopy(),
+                $this->parseNode('img', 'src', $sq)->getArrayCopy()
+            )
         );
         $collection->exchangeArray(
-            array_merge($collection->getArrayCopy(), $this->parseCss($sq)->getArrayCopy())
+            array_merge(
+                $collection->getArrayCopy(),
+                $this->parseNode('link[rel="stylesheet"]', 'href', $sq)->getArrayCopy()
+            )
+        );
+        $collection->exchangeArray(
+            array_merge(
+                $collection->getArrayCopy(),
+                $this->parseNode('script', 'src', $sq)->getArrayCopy()
+            )
         );
 
         return $collection;
     }
 
     /**
-     * Парсит ссылки
+     * Парсинг
      */
-    protected function parseLinks(SimpleQueryInterface $sq): UriCollectionInterface
+    protected function parseNode(string $selector, string $attribute, SimpleQueryInterface $sq): UriCollectionInterface
     {
         $collection = new UriCollection();
 
-        $links = $sq('a');
-        /** @var \DOMElement $link */
-        foreach ($links as $link) {
-            $href = $sq($link)->attr('href');
-            if (!is_string($href) || !$href) {
+        $nodes = $sq($selector);
+        /** @var \DOMElement $node */
+        foreach ($nodes as $node) {
+            $value = $sq($node)->attr($attribute);
+            if (!is_string($value) || !$value) {
                 continue;
             }
             try {
-                $uri = new Uri($href);
-            } catch (InvalidArgumentException $exception) {
-                continue;
-            }
-
-            $collection[] = $uri;
-        }
-
-        return $collection;
-    }
-
-    /**
-     * Парсит изображения
-     */
-    protected function parseImages(SimpleQueryInterface $sq): UriCollectionInterface
-    {
-        $collection = new UriCollection();
-
-        $images = $sq('img');
-        /** @var \DOMElement $image */
-        foreach ($images as $image) {
-            $src = $sq($image)->attr('src');
-            if (!is_string($src) || !$src) {
-                continue;
-            }
-            try {
-                $uri = new Uri($src);
-            } catch (InvalidArgumentException $exception) {
-                continue;
-            }
-
-            $collection[] = $uri;
-        }
-
-        return $collection;
-    }
-
-    /**
-     * Парсит css
-     */
-    protected function parseCss(SimpleQueryInterface $sq): UriCollectionInterface
-    {
-        $collection = new UriCollection();
-
-        $css = $sq('link[rel="stylesheet"]');
-        /** @var \DOMElement $cssLink */
-        foreach ($css as $cssLink) {
-            $href = $sq($cssLink)->attr('href');
-            if (!is_string($href) || !$href) {
-                continue;
-            }
-            try {
-                $uri = new Uri($href);
+                $uri = new Uri($value);
             } catch (InvalidArgumentException $exception) {
                 continue;
             }
