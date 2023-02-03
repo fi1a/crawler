@@ -24,6 +24,7 @@ class PrepareHtmlItem implements PrepareItemInterface
         $sq = new SimpleQuery((string) $item->getBody());
         $this->replaceLinks($sq, $item, $items);
         $this->replaceImages($sq, $item, $items);
+        $this->replaceCss($sq, $item, $items);
 
         return html_entity_decode((string) $sq);
     }
@@ -65,6 +66,25 @@ class PrepareHtmlItem implements PrepareItemInterface
             $uri = $this->getNewUri($src, $item, $items);
             if ($uri) {
                 $sq($image)->attr('src', $uri->uri());
+            }
+        }
+    }
+
+    /**
+     * Замена ссылок на css
+     */
+    protected function replaceCss(SimpleQueryInterface $sq, ItemInterface $item, ItemCollectionInterface $items): void
+    {
+        $css = $sq('link[rel="stylesheet"]');
+        /** @var \DOMElement $cssLink */
+        foreach ($css as $cssLink) {
+            $href = $sq($cssLink)->attr('href');
+            if (!is_string($href) || !$href) {
+                continue;
+            }
+            $uri = $this->getNewUri($href, $item, $items);
+            if ($uri) {
+                $sq($cssLink)->attr('href', $uri->uri());
             }
         }
     }

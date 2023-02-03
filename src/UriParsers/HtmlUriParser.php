@@ -27,6 +27,9 @@ class HtmlUriParser implements UriParserInterface
         $collection->exchangeArray(
             array_merge($collection->getArrayCopy(), $this->parseImages($sq)->getArrayCopy())
         );
+        $collection->exchangeArray(
+            array_merge($collection->getArrayCopy(), $this->parseCss($sq)->getArrayCopy())
+        );
 
         return $collection;
     }
@@ -73,6 +76,32 @@ class HtmlUriParser implements UriParserInterface
             }
             try {
                 $uri = new Uri($src);
+            } catch (InvalidArgumentException $exception) {
+                continue;
+            }
+
+            $collection[] = $uri;
+        }
+
+        return $collection;
+    }
+
+    /**
+     * Парсит css
+     */
+    protected function parseCss(SimpleQueryInterface $sq): UriCollectionInterface
+    {
+        $collection = new UriCollection();
+
+        $css = $sq('link[rel="stylesheet"]');
+        /** @var \DOMElement $cssLink */
+        foreach ($css as $cssLink) {
+            $href = $sq($cssLink)->attr('href');
+            if (!is_string($href) || !$href) {
+                continue;
+            }
+            try {
+                $uri = new Uri($href);
             } catch (InvalidArgumentException $exception) {
                 continue;
             }
