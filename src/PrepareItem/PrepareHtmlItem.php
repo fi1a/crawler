@@ -22,69 +22,34 @@ class PrepareHtmlItem implements PrepareItemInterface
     public function prepare(ItemInterface $item, ItemCollectionInterface $items)
     {
         $sq = new SimpleQuery((string) $item->getBody());
-        $this->replaceLinks($sq, $item, $items);
-        $this->replaceImages($sq, $item, $items);
-        $this->replaceCss($sq, $item, $items);
+        $this->replace('a', 'href', $sq, $item, $items);
+        $this->replace('img', 'src', $sq, $item, $items);
+        $this->replace('link[rel="stylesheet"]', 'href', $sq, $item, $items);
+        $this->replace('script', 'src', $sq, $item, $items);
 
         return html_entity_decode((string) $sq);
     }
 
     /**
-     * Замена ссылок
+     * Замена
      */
-    protected function replaceLinks(SimpleQueryInterface $sq, ItemInterface $item, ItemCollectionInterface $items): void
-    {
-        $links = $sq('a');
-        /** @var \DOMElement $link */
-        foreach ($links as $link) {
-            $href = $sq($link)->attr('href');
-            if (!is_string($href) || !$href) {
-                continue;
-            }
-            $uri = $this->getNewUri($href, $item, $items);
-            if ($uri) {
-                $sq($link)->attr('href', $uri->uri());
-            }
-        }
-    }
-
-    /**
-     * Замена изображений
-     */
-    protected function replaceImages(
+    protected function replace(
+        string $selector,
+        string $attribute,
         SimpleQueryInterface $sq,
         ItemInterface $item,
         ItemCollectionInterface $items
     ): void {
-        $images = $sq('img');
-        /** @var \DOMElement $image */
-        foreach ($images as $image) {
-            $src = $sq($image)->attr('src');
-            if (!is_string($src) || !$src) {
+        $nodes = $sq($selector);
+        /** @var \DOMElement $node */
+        foreach ($nodes as $node) {
+            $value = $sq($node)->attr($attribute);
+            if (!is_string($value) || !$value) {
                 continue;
             }
-            $uri = $this->getNewUri($src, $item, $items);
+            $uri = $this->getNewUri($value, $item, $items);
             if ($uri) {
-                $sq($image)->attr('src', $uri->uri());
-            }
-        }
-    }
-
-    /**
-     * Замена ссылок на css
-     */
-    protected function replaceCss(SimpleQueryInterface $sq, ItemInterface $item, ItemCollectionInterface $items): void
-    {
-        $css = $sq('link[rel="stylesheet"]');
-        /** @var \DOMElement $cssLink */
-        foreach ($css as $cssLink) {
-            $href = $sq($cssLink)->attr('href');
-            if (!is_string($href) || !$href) {
-                continue;
-            }
-            $uri = $this->getNewUri($href, $item, $items);
-            if ($uri) {
-                $sq($cssLink)->attr('href', $uri->uri());
+                $sq($node)->attr($attribute, $uri->uri());
             }
         }
     }

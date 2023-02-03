@@ -67,6 +67,14 @@ class PrepareHtmlItemTest extends TestCase
         $item->setNewItemUri(new Uri('/path/to/images/for-test.jpeg'));
         $itemCollection[$item->getItemUri()->uri()] = $item;
 
+        $item = new Item(new Uri($this->getUrl('/css/styles.css')));
+        $item->setNewItemUri(new Uri('/css/styles.css'));
+        $itemCollection[$item->getItemUri()->uri()] = $item;
+
+        $item = new Item(new Uri($this->getUrl('/js/script.js')));
+        $item->setNewItemUri(new Uri('/js/script.js'));
+        $itemCollection[$item->getItemUri()->uri()] = $item;
+
         $this->assertEquals(
             file_get_contents(__DIR__ . '/../Fixtures/Server/equals/path/to/index.html'),
             $prepare->prepare($preparePage, $itemCollection)
