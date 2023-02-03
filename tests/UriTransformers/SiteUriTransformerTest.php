@@ -6,6 +6,7 @@ namespace Fi1a\Unit\Crawler\UriTransformers;
 
 use Fi1a\Crawler\Item;
 use Fi1a\Crawler\UriTransformers\SiteUriTransformer;
+use Fi1a\Http\Mime;
 use Fi1a\Http\Uri;
 use Fi1a\Unit\Crawler\TestCases\TestCase;
 
@@ -22,15 +23,31 @@ class SiteUriTransformerTest extends TestCase
         $converter = new SiteUriTransformer();
         $item = new Item(new Uri($this->getUrl('/index.html')));
         $item->setAllow(true);
-        $this->assertEquals('/index.html', $converter->transform($item)->getUri());
-
-        $item = new Item(new Uri($this->getUrl('/index.html?q=1')));
-        $item->setAllow(true);
-        $this->assertEquals('/index.html?q=1', $converter->transform($item)->getUri());
+        $this->assertEquals('/index.html', $converter->transform($item)->uri());
 
         $item = new Item(new Uri('/path/index.html'));
         $item->setAllow(true);
-        $this->assertEquals('/path/index.html', $converter->transform($item)->getUri());
+        $this->assertEquals('/path/index.html', $converter->transform($item)->uri());
+
+        $converter = new SiteUriTransformer();
+        $item = new Item(new Uri($this->getUrl('/path/')));
+        $item->setAllow(true);
+        $this->assertEquals('/path/index.html', $converter->transform($item)->uri());
+
+        $converter = new SiteUriTransformer();
+        $item = new Item(new Uri($this->getUrl('/path/index.php')));
+        $item->setContentType(Mime::HTML);
+        $item->setAllow(true);
+        $this->assertEquals('/path/index.html', $converter->transform($item)->uri());
+
+        $converter = new SiteUriTransformer();
+        $item = new Item(new Uri($this->getUrl('/path/index.php?foo=bar&baz[]=qux&baz[]=guz')));
+        $item->setContentType(Mime::HTML);
+        $item->setAllow(true);
+        $this->assertEquals(
+            '/path/index--foo=bar&baz[0]=qux&baz[1]=guz.html',
+            $converter->transform($item)->uri()
+        );
     }
 
     /**
@@ -41,7 +58,7 @@ class SiteUriTransformerTest extends TestCase
         $converter = new SiteUriTransformer();
         $item = new Item(new Uri($this->getUrl('/index.html')));
         $item->setAllow(false);
-        $this->assertEquals($item->getItemUri()->getUri(), $converter->transform($item)->getUri());
+        $this->assertEquals($item->getItemUri()->uri(), $converter->transform($item)->uri());
     }
 
     /**
@@ -54,7 +71,7 @@ class SiteUriTransformerTest extends TestCase
         $item->setAllow(true);
         $this->assertEquals(
             'https://user:pass@' . self::HOST . '/prefix/index.html',
-            $converter->transform($item)->getUri()
+            $converter->transform($item)->uri()
         );
     }
 }

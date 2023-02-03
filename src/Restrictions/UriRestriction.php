@@ -26,7 +26,7 @@ class UriRestriction implements RestrictionInterface
         if (!($allow instanceof UriInterface)) {
             $allow = new Uri($allow);
         }
-        if (!$allow->getHost()) {
+        if (!$allow->host()) {
             throw new InvalidArgumentException('Не задан разрешенный хост');
         }
         $this->allow = $allow;
@@ -37,13 +37,13 @@ class UriRestriction implements RestrictionInterface
      */
     public function isAllow(UriInterface $uri): bool
     {
-        if (!$uri->getHost() && $this->allow->getPath() === '/') {
+        if (!$uri->host() && $this->allow->path() === '/') {
             return true;
         }
-        if ($uri->getHost() && $this->allow->getHost() !== $uri->getHost()) {
+        if ($uri->host() && $this->allow->host() !== $uri->host()) {
             return false;
         }
 
-        return mb_stripos($uri->getPath(), $this->allow->getPath()) === 0;
+        return mb_stripos($uri->path(), $this->allow->path()) === 0;
     }
 }

@@ -124,7 +124,7 @@ class LocalItemStorage implements ItemStorageInterface
      */
     protected function getBodyFileName(ItemInterface $item): string
     {
-        return md5($item->getItemUri()->getUri());
+        return md5($item->getItemUri()->uri());
     }
 
     /**

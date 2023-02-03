@@ -30,7 +30,7 @@ class ItemCollection extends Collection implements ItemCollectionInterface
         if (is_array($json)) {
             foreach ($json as $jsonItem) {
                 $item = Item::fromArray($jsonItem);
-                $this->set($item->getItemUri()->getUri(), $item);
+                $this->set($item->getItemUri()->uri(), $item);
             }
         }
 

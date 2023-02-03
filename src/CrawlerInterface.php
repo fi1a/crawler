@@ -93,14 +93,38 @@ interface CrawlerInterface
      *
      * @return $this
      */
-    public function setPrepareItem(PrepareItemInterface $prepareItem);
+    public function setPrepareItem(PrepareItemInterface $prepareItem, ?string $mime = null);
+
+    /**
+     * Проверяет наличие класса подготавливающего элемент (в зависимости от типа контента)
+     */
+    public function hasPrepareItem(?string $mime = null): bool;
+
+    /**
+     * Удаляет класс подготавливающий элемент (в зависимости от типа контента)
+     *
+     * @return $this
+     */
+    public function removePrepareItem(?string $mime = null);
 
     /**
      * Установить класс записывающий результат обхода
      *
      * @return $this
      */
-    public function setWriter(WriterInterface $writer);
+    public function setWriter(WriterInterface $writer, ?string $mime = null);
+
+    /**
+     * Проверяет наличие класса записывающего результат обхода (в зависимости от типа контента)
+     */
+    public function hasWriter(?string $mime = null): bool;
+
+    /**
+     * Удаляет класс записывающий результат обхода (в зависимости от типа контента)
+     *
+     * @return $this
+     */
+    public function removeWriter(?string $mime = null);
 
     /**
      * Очищает данные хранилища

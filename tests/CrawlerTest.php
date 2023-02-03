@@ -12,10 +12,12 @@ use Fi1a\Crawler\ConfigInterface;
 use Fi1a\Crawler\Crawler;
 use Fi1a\Crawler\CrawlerInterface;
 use Fi1a\Crawler\ItemStorages\LocalItemStorage;
+use Fi1a\Crawler\PrepareItem\PrepareHtmlItem;
 use Fi1a\Crawler\Restrictions\UriRestriction;
 use Fi1a\Crawler\UriCollection;
 use Fi1a\Crawler\UriParsers\HtmlUriParser;
 use Fi1a\Crawler\Writers\FileWriter;
+use Fi1a\Http\Mime;
 use Fi1a\Http\MimeInterface;
 use Fi1a\Http\Uri;
 use Fi1a\Unit\Crawler\TestCases\TestCase;
@@ -158,10 +160,10 @@ class CrawlerTest extends TestCase
         $crawler->run();
         $this->assertCount(1, $crawler->getRestrictions());
         $this->assertTrue($crawler->hasUriParser());
-        $this->assertEquals(16, $crawler->getItems()->count());
-        $this->assertEquals(9, $crawler->getItems()->getDownloaded()->count());
-        $this->assertEquals(16, $crawler->getItems()->getProcessed()->count());
-        $this->assertEquals(9, $crawler->getItems()->getWrited()->count());
+        $this->assertEquals(22, $crawler->getItems()->count());
+        $this->assertEquals(14, $crawler->getItems()->getDownloaded()->count());
+        $this->assertEquals(22, $crawler->getItems()->getProcessed()->count());
+        $this->assertEquals(14, $crawler->getItems()->getWrited()->count());
 
         $crawler2 = new Crawler($config, new LocalItemStorage($this->runtimeFolder));
         $crawler2->setWriter(new FileWriter($this->runtimeFolder . '/web'));
@@ -170,10 +172,10 @@ class CrawlerTest extends TestCase
         $crawler2->run();
         $this->assertCount(1, $crawler2->getRestrictions());
         $this->assertTrue($crawler2->hasUriParser());
-        $this->assertEquals(16, $crawler2->getItems()->count());
-        $this->assertEquals(9, $crawler2->getItems()->getDownloaded()->count());
-        $this->assertEquals(16, $crawler2->getItems()->getProcessed()->count());
-        $this->assertEquals(9, $crawler2->getItems()->getWrited()->count());
+        $this->assertEquals(22, $crawler2->getItems()->count());
+        $this->assertEquals(14, $crawler2->getItems()->getDownloaded()->count());
+        $this->assertEquals(22, $crawler2->getItems()->getProcessed()->count());
+        $this->assertEquals(14, $crawler2->getItems()->getWrited()->count());
     }
 
     /**
@@ -188,7 +190,7 @@ class CrawlerTest extends TestCase
     }
 
     /**
-     * Метолы по работе с парсерами uri
+     * Методы по работе с парсерами uri
      */
     public function testUriParsersMethods(): void
     {
@@ -276,5 +278,100 @@ class CrawlerTest extends TestCase
         $this->assertCount(1, $crawler->getItems());
         $crawler->addUri(new Uri($this->getUrl('/path/to/index.html')));
         $this->assertCount(2, $crawler->getItems());
+    }
+
+    /**
+     * Методы по работе с классом подготавливающего элемент
+     */
+    public function testPrepareItemMethods(): void
+    {
+        $crawler = $this->getCrawler();
+        $this->assertFalse($crawler->hasPrepareItem());
+        $this->assertFalse($crawler->hasPrepareItem(MimeInterface::HTML));
+        $crawler->setPrepareItem(new PrepareHtmlItem());
+        $crawler->setPrepareItem(new PrepareHtmlItem(), MimeInterface::HTML);
+        $this->assertTrue($crawler->hasPrepareItem());
+        $this->assertTrue($crawler->hasPrepareItem(MimeInterface::HTML));
+        $crawler->removePrepareItem();
+        $crawler->removePrepareItem(MimeInterface::HTML);
+        $crawler->removePrepareItem();
+        $crawler->removePrepareItem(MimeInterface::HTML);
+        $this->assertFalse($crawler->hasPrepareItem());
+        $this->assertFalse($crawler->hasPrepareItem(MimeInterface::HTML));
+    }
+
+    /**
+     * Методы по работе с классом записывающим результат обхода
+     */
+    public function testWriterMethods(): void
+    {
+        $crawler = new Crawler($this->getConfig(), new LocalItemStorage($this->runtimeFolder));
+        $this->assertFalse($crawler->hasWriter());
+        $this->assertFalse($crawler->hasWriter(MimeInterface::HTML));
+        $crawler->setWriter(new FileWriter($this->runtimeFolder . '/web'));
+        $crawler->setWriter(new FileWriter($this->runtimeFolder . '/web'), MimeInterface::HTML);
+        $this->assertTrue($crawler->hasWriter());
+        $this->assertTrue($crawler->hasWriter(MimeInterface::HTML));
+        $crawler->removeWriter();
+        $crawler->removeWriter(MimeInterface::HTML);
+        $crawler->removeWriter();
+        $crawler->removeWriter(MimeInterface::HTML);
+        $this->assertFalse($crawler->hasWriter());
+        $this->assertFalse($crawler->hasWriter(MimeInterface::HTML));
+    }
+
+    /**
+     * Вызов класса подготавливающего элемент бля всех типов контента
+     */
+    public function testPrepareCallByAllMime(): void
+    {
+        $uriParser = $this->getMockBuilder(HtmlUriParser::class)
+            ->onlyMethods(['parse'])
+            ->getMock();
+
+        $uriParser->expects($this->exactly(2))
+            ->method('parse')
+            ->willReturn(new UriCollection());
+
+        $prepare = $this->getMockBuilder(PrepareHtmlItem::class)
+            ->onlyMethods(['prepare'])
+            ->getMock();
+
+        $prepare->expects($this->atLeastOnce())->method('prepare');
+
+        $crawler = $this->getCrawler();
+        $crawler->setUriParser($uriParser);
+        $crawler->setPrepareItem($prepare);
+
+        $crawler->clearStorageData();
+        $crawler->run();
+    }
+
+    /**
+     * Вызов класса записывающего результат обхода для конкретного типа контента
+     */
+    public function testWriteCallByMime(): void
+    {
+        $uriParser = $this->getMockBuilder(HtmlUriParser::class)
+            ->onlyMethods(['parse'])
+            ->getMock();
+
+        $uriParser->expects($this->exactly(2))
+            ->method('parse')
+            ->willReturn(new UriCollection());
+
+        $writer = $this->getMockBuilder(FileWriter::class)
+            ->onlyMethods(['write'])
+            ->setConstructorArgs([$this->runtimeFolder . '/web'])
+            ->getMock();
+
+        $writer->expects($this->atLeastOnce())->method('write')->willReturn(true);
+
+        $crawler = $this->getCrawler();
+        $crawler->setUriParser($uriParser);
+        $crawler->setWriter($writer, Mime::HTML);
+
+        $crawler->clearStorageData();
+        $crawler->run();
     }
 }

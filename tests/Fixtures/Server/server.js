@@ -12,7 +12,6 @@ const options = {
 
 app.use(express.static(__dirname + '/public', {maxAge: oneYear}));
 
-
 https.createServer(options, app).listen(httpsPort, () => {
     console.log(`App listening on port ${httpsPort}`)
 });
