@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Fi1a\Crawler\Proxy;
 
+use DateTime;
 use Fi1a\HttpClient\Proxy\HttpProxy;
 use Fi1a\HttpClient\Proxy\ProxyInterface as HttpClientProxyInterface;
 use Fi1a\HttpClient\Proxy\Socks5Proxy;
@@ -28,6 +29,11 @@ class Proxy implements ProxyInterface
      * @var bool
      */
     protected $active = true;
+
+    /**
+     * @var DateTime|null
+     */
+    protected $lastUse;
 
     protected function __construct(HttpClientProxyInterface $proxy)
     {
@@ -165,12 +171,32 @@ class Proxy implements ProxyInterface
     /**
      * @inheritDoc
      */
+    public function setLastUse(?DateTime $lastUse)
+    {
+        $this->lastUse = $lastUse;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getLastUse(): ?DateTime
+    {
+        return $this->lastUse;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function toArray(): array
     {
         $type = 'http';
         if ($this->proxy instanceof Socks5Proxy) {
             $type = 'socks5';
         }
+
+        $lastUse = $this->getLastUse();
 
         return [
             'type' => $type,
@@ -180,6 +206,7 @@ class Proxy implements ProxyInterface
             'password' => $this->proxy->getPassword(),
             'attempts' => $this->getAttempts(),
             'active' => $this->isActive(),
+            'lastUse' => $lastUse ? $lastUse->format('d.m.Y H:i:s') : null,
         ];
     }
 
@@ -224,10 +251,14 @@ class Proxy implements ProxyInterface
 
         $attempts = isset($item['attempts']) ? (int) $item['attempts'] :  0;
         $active = !isset($item['active']) || (bool) $item['active'] === true;
+        $lastUse = isset($item['lastUse']) && $item['lastUse']
+            ? DateTime::createFromFormat('d.m.Y H:i:s', (string) $item['lastUse'])
+            : null;
 
         $instance = new Proxy($proxy);
         $instance->setAttempts($attempts);
         $instance->setActive($active);
+        $instance->setLastUse($lastUse);
 
         return $instance;
     }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Fi1a\Crawler\Proxy;
 
+use DateTime;
 use Fi1a\HttpClient\Proxy\ProxyInterface as HttpClientProxyInterface;
 
 /**
@@ -55,6 +56,18 @@ interface ProxyInterface extends HttpClientProxyInterface
      * @return array<array-key, mixed>
      */
     public function toArray(): array;
+
+    /**
+     * Установить дату и время последнего использования
+     *
+     * @return $this
+     */
+    public function setLastUse(?DateTime $lastUse);
+
+    /**
+     * Вернуть дату и время последнего использования
+     */
+    public function getLastUse(): ?DateTime;
 
     /**
      * Фабричный метод

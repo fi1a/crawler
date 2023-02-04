@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Fi1a\Unit\Crawler\Proxy;
 
+use DateTime;
 use Fi1a\Crawler\Proxy\Proxy;
 use Fi1a\Crawler\Proxy\ProxyInterface;
 use Fi1a\Unit\Crawler\TestCases\TestCase;
@@ -25,6 +26,7 @@ class ProxyTest extends TestCase
         'password' => HTTP_PROXY_PASSWORD,
         'attempts' => 0,
         'active' => true,
+        'lastUse' => '04.02.2023 07:05:00',
     ];
 
     /**
@@ -38,6 +40,7 @@ class ProxyTest extends TestCase
         'password' => SOCKS5_PROXY_PASSWORD,
         'attempts' => 0,
         'active' => true,
+        'lastUse' => '04.02.2023 07:05:00',
     ];
 
     /**
@@ -188,5 +191,24 @@ class ProxyTest extends TestCase
         $this->assertTrue($proxy->isActive());
         $proxy->setActive(false);
         $this->assertFalse($proxy->isActive());
+    }
+
+    /**
+     * Дата и время последнего использования
+     */
+    public function testLastUse(): void
+    {
+        $proxy = Proxy::factory(static::$httpProxy);
+        $this->assertInstanceOf(DateTime::class, $proxy->getLastUse());
+        $this->assertEquals(
+            static::$httpProxy['lastUse'],
+            $proxy->getLastUse()->format('d.m.Y H:i:s')
+        );
+        $lastUse = new DateTime();
+        $proxy->setLastUse($lastUse);
+        $this->assertEquals(
+            $lastUse->format('d.m.Y H:i:s'),
+            $proxy->getLastUse()->format('d.m.Y H:i:s')
+        );
     }
 }
