@@ -19,6 +19,7 @@ class Config extends ValueObject implements ConfigInterface
 {
     protected $modelKeys = [
         'startUri', 'httpClientConfig', 'httpClientHandler', 'verbose', 'logChannel', 'saveAfterQuantity',
+        'lifeTime',
     ];
 
     /**
@@ -33,6 +34,7 @@ class Config extends ValueObject implements ConfigInterface
             'verbose' => self::VERBOSE_NORMAL,
             'logChannel' => 'crawler',
             'saveAfterQuantity' => 10,
+            'lifeTime' => 24 * 60 * 60,
         ];
     }
 
@@ -151,8 +153,8 @@ class Config extends ValueObject implements ConfigInterface
      */
     public function setSaveAfterQuantity(int $quantity)
     {
-        if ($quantity < -1) {
-            throw new InvalidArgumentException('Кол-во должно быть больше или равно -1');
+        if ($quantity < 0) {
+            throw new InvalidArgumentException('Кол-во должно быть больше или равно 0');
         }
         $this->modelSet('saveAfterQuantity', $quantity);
 
@@ -165,5 +167,26 @@ class Config extends ValueObject implements ConfigInterface
     public function getSaveAfterQuantity(): int
     {
         return (int) $this->modelGet('saveAfterQuantity');
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setLifetime(int $lifeTime)
+    {
+        if ($lifeTime < 0) {
+            throw new InvalidArgumentException('Время жизни должно быть больше или равно 0');
+        }
+        $this->modelSet('lifeTime', $lifeTime);
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getLifetime(): int
+    {
+        return (int) $this->modelGet('lifeTime');
     }
 }

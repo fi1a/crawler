@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Fi1a\Crawler;
 
+use DateTime;
 use Fi1a\Http\UriInterface;
 
 /**
@@ -124,6 +125,13 @@ interface ItemInterface
     public function free();
 
     /**
+     * Сбрасывает состояние
+     *
+     * @return $this
+     */
+    public function reset();
+
+    /**
      * Установить тип контента
      *
      * @return $this
@@ -146,6 +154,30 @@ interface ItemInterface
      * Вернуть новый uri
      */
     public function getNewItemUri(): ?UriInterface;
+
+    /**
+     * Истечет в переданное время
+     *
+     * @return $this
+     */
+    public function expiresAt(?DateTime $dateTime);
+
+    /**
+     * Истекает через переданное время
+     *
+     * @return $this
+     */
+    public function expiresAfter(?int $lifetime);
+
+    /**
+     * Возвращает когда закончится срок жизни
+     */
+    public function getExpire(): ?DateTime;
+
+    /**
+     * Срок жизни истек
+     */
+    public function isExpired(): bool;
 
     /**
      * Возвращает абсолютный путь относительно элемента

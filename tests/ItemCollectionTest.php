@@ -26,18 +26,6 @@ class ItemCollectionTest extends TestCase
     }
 
     /**
-     * Коллекция элементов из JSON строки
-     */
-    public function testFromJson(): void
-    {
-        $collection = new ItemCollection();
-        $collection->fromJson('[{"itemUri":"/path/uri1/"}, {"itemUri":"/path/uri2/"}]');
-        $this->assertCount(2, $collection);
-        $this->assertTrue($collection->has('/path/uri1/'));
-        $this->assertTrue($collection->has('/path/uri2/'));
-    }
-
-    /**
      * Загруженные
      */
     public function testDownloaded(): void

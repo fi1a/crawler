@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace Fi1a\Crawler\ItemStorages;
 
 use ErrorException;
+use Fi1a\Crawler\Item;
 use Fi1a\Crawler\ItemCollection;
 use Fi1a\Crawler\ItemCollectionInterface;
 use Fi1a\Crawler\ItemInterface;
-use Fi1a\Filesystem\Adapters\LocalAdapter;
+use Fi1a\Filesystem\Adapters\LocalAdapter as FilesystemLocalAdapter;
 use Fi1a\Filesystem\FileInterface;
 use Fi1a\Filesystem\Filesystem;
 use Fi1a\Filesystem\FilesystemInterface;
@@ -19,7 +20,7 @@ use const JSON_UNESCAPED_UNICODE;
 /**
  * Хранение элементов
  */
-class LocalItemStorage implements ItemStorageInterface
+class FilesystemAdapter implements StorageAdapterInterface
 {
     /**
      * @var FolderInterface
@@ -43,7 +44,7 @@ class LocalItemStorage implements ItemStorageInterface
 
     public function __construct(string $path)
     {
-        $adapter = new LocalAdapter($path);
+        $adapter = new FilesystemLocalAdapter($path);
         $this->filesystem = new Filesystem($adapter);
 
         $this->pathDir = $this->filesystem->factoryFolder('.');
@@ -63,7 +64,17 @@ class LocalItemStorage implements ItemStorageInterface
             return $collection;
         }
 
-        return $collection->fromJson($content);
+        /** @var array<array-key, array<array-key, mixed>>|false $json */
+        $json = json_decode($content, true);
+
+        if (is_array($json)) {
+            foreach ($json as $jsonItem) {
+                $item = Item::fromArray($jsonItem);
+                $collection->set($item->getItemUri()->uri(), $item);
+            }
+        }
+
+        return $collection;
     }
 
     /**

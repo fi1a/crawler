@@ -97,4 +97,16 @@ interface ConfigInterface extends ValueObjectInterface
      * Возвращает параметр определяющий через какое новое кол-во элементов сохранять элементы в хранилище
      */
     public function getSaveAfterQuantity(): int;
+
+    /**
+     * Установить время жизни элементов в хранилище
+     *
+     * @return $this
+     */
+    public function setLifetime(int $lifeTime);
+
+    /**
+     * Вернуть время жизни элементов в хранилище
+     */
+    public function getLifetime(): int;
 }
