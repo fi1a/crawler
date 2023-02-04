@@ -2,7 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Fi1a\Crawler\Proxy;
+namespace Fi1a\Crawler\Proxy\StorageAdapters;
+
+use Fi1a\Crawler\Proxy\ProxyCollectionInterface;
+use Fi1a\Crawler\Proxy\ProxyInterface;
 
 /**
  * Адаптер хранилища

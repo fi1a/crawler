@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Fi1a\Crawler\Proxy;
 
+use Fi1a\Crawler\Proxy\StorageAdapters\StorageAdapterInterface;
+
 /**
  * Хранилище прокси
  */

@@ -6,11 +6,12 @@ namespace Fi1a\Unit\Crawler\TestCases;
 
 use Fi1a\Crawler\Item;
 use Fi1a\Crawler\ItemInterface;
-use Fi1a\Crawler\Proxy\FilesystemAdapter;
+use Fi1a\Crawler\Proxy\Proxy;
 use Fi1a\Crawler\Proxy\ProxyCollection;
 use Fi1a\Crawler\Proxy\ProxyCollectionInterface;
 use Fi1a\Crawler\Proxy\ProxyStorage;
 use Fi1a\Crawler\Proxy\ProxyStorageInterface;
+use Fi1a\Crawler\Proxy\StorageAdapters\FilesystemAdapter;
 use Fi1a\Http\Uri;
 use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 use RecursiveDirectoryIterator;
@@ -127,15 +128,32 @@ class TestCase extends PHPUnitTestCase
     {
         $collection = new ProxyCollection();
 
-        $collection[] = static::$httpProxy;
+        $proxy = Proxy::factory(static::$httpProxy);
+        $proxy->setActive(false);
+        $collection[] = $proxy;
+
         $collection[] = static::$socks5Proxy;
+
         $collection[] = static::$httpProxy;
+
+        $proxy = Proxy::factory(static::$socks5Proxy);
+        $proxy->setActive(false);
+        $collection[] = $proxy;
+
+        $proxy = Proxy::factory(static::$httpProxy);
+        $proxy->setAttempts(10);
+        $collection[] = $proxy;
+
         $collection[] = static::$socks5Proxy;
+
         $collection[] = static::$httpProxy;
-        $collection[] = static::$socks5Proxy;
+
+        $proxy = Proxy::factory(static::$socks5Proxy);
+        $proxy->setAttempts(9);
+        $collection[] = $proxy;
+
         $collection[] = static::$httpProxy;
-        $collection[] = static::$socks5Proxy;
-        $collection[] = static::$httpProxy;
+
         $collection[] = static::$socks5Proxy;
 
         return $collection;

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Fi1a\Unit\Crawler\Proxy;
+namespace Fi1a\Unit\Crawler\Proxy\StorageAdapters;
 
 use ErrorException;
-use Fi1a\Crawler\Proxy\FilesystemAdapter;
 use Fi1a\Crawler\Proxy\ProxyInterface;
+use Fi1a\Crawler\Proxy\StorageAdapters\FilesystemAdapter;
 use Fi1a\Unit\Crawler\TestCases\TestCase;
 
 /**
