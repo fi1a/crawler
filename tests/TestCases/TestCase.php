@@ -21,6 +21,34 @@ class TestCase extends PHPUnitTestCase
     protected $runtimeFolder = __DIR__ . '/../runtime';
 
     /**
+     * @var array<array-key, mixed>
+     */
+    protected static $httpProxy = [
+        'type' => 'http',
+        'host' => HTTP_PROXY_HOST,
+        'port' => HTTP_PROXY_PORT,
+        'userName' => HTTP_PROXY_USERNAME,
+        'password' => HTTP_PROXY_PASSWORD,
+        'attempts' => 0,
+        'active' => true,
+        'lastUse' => '04.02.2023 07:05:00',
+    ];
+
+    /**
+     * @var array<array-key, mixed>
+     */
+    protected static $socks5Proxy = [
+        'type' => 'socks5',
+        'host' => SOCKS5_PROXY_HOST,
+        'port' => SOCKS5_PROXY_PORT,
+        'userName' => SOCKS5_PROXY_USERNAME,
+        'password' => SOCKS5_PROXY_PASSWORD,
+        'attempts' => 0,
+        'active' => true,
+        'lastUse' => '04.02.2023 07:05:00',
+    ];
+
+    /**
      * @inheritDoc
      */
     protected function tearDown(): void
