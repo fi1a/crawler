@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Fi1a\Crawler;
 
+use DateTime;
 use Fi1a\Http\Uri;
 use Fi1a\Http\UriInterface;
 use InvalidArgumentException;
@@ -67,6 +68,11 @@ class Item implements ItemInterface
      * @var UriInterface|null
      */
     protected $newItemUri;
+
+    /**
+     * @var DateTime|null
+     */
+    protected $expire;
 
     public function __construct(UriInterface $itemUri)
     {
@@ -239,6 +245,24 @@ class Item implements ItemInterface
     /**
      * @inheritDoc
      */
+    public function reset()
+    {
+        $this->free();
+        $this->statusCode = null;
+        $this->reasonPhrase = null;
+        $this->downloadStatus = null;
+        $this->processStatus = null;
+        $this->writeStatus = null;
+        $this->contentType = null;
+        $this->newItemUri = null;
+        $this->expire = null;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function setContentType(?string $contentType)
     {
         $this->contentType = $contentType;
@@ -270,6 +294,40 @@ class Item implements ItemInterface
     public function getNewItemUri(): ?UriInterface
     {
         return $this->newItemUri;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function expiresAt(?DateTime $dateTime)
+    {
+        $this->expire = $dateTime;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function expiresAfter(?int $lifetime)
+    {
+        return $this->expiresAt($lifetime ? (new DateTime())->setTimestamp(time() + $lifetime) : null);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getExpire(): ?DateTime
+    {
+        return $this->expire;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isExpired(): bool
+    {
+        return $this->expire && $this->expire->getTimestamp() <= time();
     }
 
     /**
@@ -312,6 +370,7 @@ class Item implements ItemInterface
     public function toArray(): array
     {
         $newItemUri = $this->getNewItemUri();
+        $expire = $this->getExpire();
 
         return [
             'itemUri' => $this->getItemUri()->uri(),
@@ -323,6 +382,7 @@ class Item implements ItemInterface
             'writeStatus' => $this->getWriteStatus(),
             'contentType' => $this->getContentType(),
             'newItemUri' =>  $newItemUri ? $newItemUri->uri() : null,
+            'expire' => $expire ? $expire->format('d.m.Y H:i:s') : null,
         ];
     }
 
@@ -358,6 +418,9 @@ class Item implements ItemInterface
         }
         if (isset($fields['newItemUri']) && is_string($fields['newItemUri'])) {
             $item->setNewItemUri(new Uri($fields['newItemUri']));
+        }
+        if (isset($fields['expire']) && is_string($fields['expire'])) {
+            $item->expiresAt(DateTime::createFromFormat('d.m.Y H:i:s', $fields['expire']));
         }
 
         return $item;

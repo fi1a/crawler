@@ -108,6 +108,11 @@ class Crawler implements CrawlerInterface
      */
     protected $storage;
 
+    /**
+     * @var bool
+     */
+    protected $needLoadFromStorage = true;
+
     public function __construct(
         ConfigInterface $config,
         ItemStorageInterface $storage,
@@ -398,23 +403,30 @@ class Crawler implements CrawlerInterface
      */
     protected function initFromStorage(): void
     {
-        $this->logger->info('Извлечение данных из хранилища');
-        $this->items = $this->storage->load();
+        if ($this->needLoadFromStorage) {
+            $this->logger->info('Извлечение данных из хранилища');
+            $this->items = $this->storage->load();
+        }
         $this->queue = new Queue();
         foreach ($this->items as $item) {
             assert($item instanceof ItemInterface);
             $this->queue->addEnd($item);
         }
-        $this->logger->info(
-            'Извлечено {{count}} {{count|declension("элемент", "элемента", "элементов")}}',
-            ['count' => $this->items->count()]
-        );
-        if ($this->items->count()) {
-            $this->output->writeln(
-                'Извлечено {{count}} {{count|declension("элемент", "элемента", "элементов")}}',
+        if ($this->needLoadFromStorage) {
+            $this->logger->info(
+                '{{count|declension("Извлечен", "Извлечено", "Извлечено")}} {{count}} '
+                . '{{count|declension("элемент", "элемента", "элементов")}}',
                 ['count' => $this->items->count()]
             );
+            if ($this->items->count()) {
+                $this->output->writeln(
+                    '{{count|declension("Извлечен", "Извлечено", "Извлечено")}} {{count}} '
+                    . '{{count|declension("элемент", "элемента", "элементов")}}',
+                    ['count' => $this->items->count()]
+                );
+            }
         }
+        $this->needLoadFromStorage = false;
     }
 
     /**
@@ -705,6 +717,12 @@ class Crawler implements CrawlerInterface
      */
     protected function downloadItem(ItemInterface $item, int $index): void
     {
+        if ($this->config->getLifetime() && $item->getExpire() === null) {
+            $item->expiresAfter($this->config->getLifetime());
+        } elseif (!$this->config->getLifetime() && $item->getExpire()) {
+            $item->expiresAfter(null);
+        }
+
         if (!$item->isAllow()) {
             $this->output->writeln(
                 '{{index}}/{{count}} <color=yellow>Пропуск загрузки uri {{uri|unescape}}</>',

@@ -113,8 +113,8 @@ class ConfigTest extends TestCase
         $this->assertEquals(10, $config->getSaveAfterQuantity());
         $config->setSaveAfterQuantity(20);
         $this->assertEquals(20, $config->getSaveAfterQuantity());
-        $config->setSaveAfterQuantity(-1);
-        $this->assertEquals(-1, $config->getSaveAfterQuantity());
+        $config->setSaveAfterQuantity(0);
+        $this->assertEquals(0, $config->getSaveAfterQuantity());
     }
 
     /**
@@ -126,5 +126,28 @@ class ConfigTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $config = new Config();
         $config->setSaveAfterQuantity(-10);
+    }
+
+    /**
+     * Параметр время жизни элементов в хранилище
+     */
+    public function testLifetime(): void
+    {
+        $config = new Config();
+        $this->assertEquals(24 * 60 * 60, $config->getLifetime());
+        $config->setLifetime(2 * 24 * 60 * 60);
+        $this->assertEquals(2 * 24 * 60 * 60, $config->getLifetime());
+        $config->setLifetime(0);
+        $this->assertEquals(0, $config->getLifetime());
+    }
+
+    /**
+     * Параметр время жизни элементов в хранилище (исключение при установке значения)
+     */
+    public function testLifetimeException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $config = new Config();
+        $config->setLifetime(-10);
     }
 }

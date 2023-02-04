@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Fi1a\Unit\Crawler;
 
+use DateTime;
 use Fi1a\Crawler\Item;
 use Fi1a\Http\Mime;
 use Fi1a\Http\Uri;
@@ -29,6 +30,7 @@ class ItemTest extends TestCase
         'writeStatus' => true,
         'contentType' => '*/*',
         'newItemUri' => 'https://127.0.0.1:3000/index.html',
+        'expire' => '03.12.2030 06:07:34',
     ];
 
     /**
@@ -110,6 +112,45 @@ class ItemTest extends TestCase
         $item->free();
         $this->assertNull($item->getBody());
         $this->assertNull($item->getPrepareBody());
+    }
+
+    /**
+     * Сбрасывает состояние
+     */
+    public function testReset(): void
+    {
+        $item = new Item(new Uri($this->getUrl('/index.html')));
+        $item->setBody('body');
+        $this->assertEquals('body', $item->getBody());
+        $item->setPrepareBody('body');
+        $this->assertEquals('body', $item->getPrepareBody());
+
+        $item->setStatusCode(200);
+        $this->assertEquals(200, $item->getStatusCode());
+        $item->setReasonPhrase('OK');
+        $this->assertEquals('OK', $item->getReasonPhrase());
+        $item->setDownloadStatus(true);
+        $this->assertTrue($item->getDownloadStatus());
+        $item->setProcessStatus(true);
+        $this->assertTrue($item->getProcessStatus());
+        $item->setWriteStatus(true);
+        $this->assertTrue($item->getWriteStatus());
+        $item->setContentType('*/*');
+        $this->assertEquals('*/*', $item->getContentType());
+        $item->setNewItemUri(new Uri($this->getUrl('/index.html')));
+        $this->assertInstanceOf(UriInterface::class, $item->getNewItemUri());
+
+        $item->reset();
+
+        $this->assertNull($item->getBody());
+        $this->assertNull($item->getPrepareBody());
+        $this->assertNull($item->getStatusCode());
+        $this->assertNull($item->getReasonPhrase());
+        $this->assertNull($item->getDownloadStatus());
+        $this->assertNull($item->getProcessStatus());
+        $this->assertNull($item->getWriteStatus());
+        $this->assertNull($item->getContentType());
+        $this->assertNull($item->getNewItemUri());
     }
 
     /**
@@ -214,6 +255,7 @@ class ItemTest extends TestCase
         $item->setPrepareBody('body');
         $item->setContentType('*/*');
         $item->setNewItemUri(new Uri($this->getUrl('/index.html')));
+        $item->expiresAt(DateTime::createFromFormat('d.m.Y H:i:s', '03.12.2030 06:07:34'));
         $this->assertEquals($this->itemArray, $item->toArray());
     }
 
@@ -241,5 +283,36 @@ class ItemTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
         Item::fromArray([]);
+    }
+
+    /**
+     * Истечет в переданное время
+     */
+    public function testExpiresAt(): void
+    {
+        $item = new Item(new Uri($this->getUrl('/index.html')));
+        $this->assertNull($item->getExpire());
+        $this->assertFalse($item->isExpired());
+        $item->expiresAt(new DateTime('- 1 hour'));
+        $this->assertTrue($item->isExpired());
+        $item->expiresAt(new DateTime('+ 1 hour'));
+        $this->assertFalse($item->isExpired());
+        $this->assertInstanceOf(DateTime::class, $item->getExpire());
+    }
+
+    /**
+     * Истекает через переданное время
+     */
+    public function testExpiresAfter(): void
+    {
+        $item = new Item(new Uri($this->getUrl('/index.html')));
+        $this->assertNull($item->getExpire());
+        $this->assertFalse($item->isExpired());
+        $item->expiresAfter(1);
+        sleep(2);
+        $this->assertTrue($item->isExpired());
+        $item->expiresAfter(100);
+        $this->assertFalse($item->isExpired());
+        $this->assertInstanceOf(DateTime::class, $item->getExpire());
     }
 }
