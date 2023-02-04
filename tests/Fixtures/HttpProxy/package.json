@@ -1,0 +1,6 @@
+{
+  "private": true,
+  "dependencies": {
+    "proxy-chain": "^2.2.0"
+  }
+}
