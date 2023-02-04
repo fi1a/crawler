@@ -21,6 +21,11 @@ class Proxy implements ProxyInterface
     protected $proxy;
 
     /**
+     * @var string|null
+     */
+    protected $id;
+
+    /**
      * @var int
      */
     protected $attempts = 0;
@@ -38,6 +43,37 @@ class Proxy implements ProxyInterface
     protected function __construct(HttpClientProxyInterface $proxy)
     {
         $this->proxy = $proxy;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setId(?string $id)
+    {
+        if ($id !== null && mb_strlen($id) !== 13) {
+            throw new InvalidArgumentException('Длина идентификатора должна быть 13 символов');
+        }
+        $this->id = $id;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function generateId(): string
+    {
+        $this->id = uniqid();
+
+        return $this->id;
     }
 
     /**
@@ -199,6 +235,7 @@ class Proxy implements ProxyInterface
         $lastUse = $this->getLastUse();
 
         return [
+            'id' => $this->getId(),
             'type' => $type,
             'host' => $this->proxy->getHost(),
             'port' => $this->proxy->getPort(),
@@ -249,6 +286,7 @@ class Proxy implements ProxyInterface
                 break;
         }
 
+        $id = isset($item['id']) ? (string) $item['id'] : null;
         $attempts = isset($item['attempts']) ? (int) $item['attempts'] :  0;
         $active = !isset($item['active']) || (bool) $item['active'] === true;
         $lastUse = isset($item['lastUse']) && $item['lastUse']
@@ -256,6 +294,7 @@ class Proxy implements ProxyInterface
             : null;
 
         $instance = new Proxy($proxy);
+        $instance->setId($id);
         $instance->setAttempts($attempts);
         $instance->setActive($active);
         $instance->setLastUse($lastUse);

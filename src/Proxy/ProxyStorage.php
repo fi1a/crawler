@@ -30,8 +30,8 @@ class ProxyStorage implements ProxyStorageInterface
     /**
      * @inheritDoc
      */
-    public function save(ProxyCollectionInterface $collection): bool
+    public function save(ProxyInterface $proxy): bool
     {
-        return $this->adapter->save($collection);
+        return $this->adapter->save($proxy);
     }
 }

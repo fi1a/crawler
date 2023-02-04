@@ -183,4 +183,46 @@ class ProxyTest extends TestCase
             $proxy->getLastUse()->format('d.m.Y H:i:s')
         );
     }
+
+    /**
+     * Идентификатор
+     */
+    public function testId(): void
+    {
+        $proxy = Proxy::factory(static::$httpProxy);
+        $this->assertNull($proxy->getId());
+        $proxy->setId('1234567890123');
+        $this->assertEquals('1234567890123', $proxy->getId());
+    }
+
+    /**
+     * Исключение при длине идентифкатора не равной 13
+     */
+    public function testIdLengthExceptionLt(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $proxy = Proxy::factory(static::$httpProxy);
+        $proxy->setId('123');
+    }
+
+    /**
+     * Исключение при длине идентифкатора не равной 13
+     */
+    public function testIdLengthExceptionGt(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $proxy = Proxy::factory(static::$httpProxy);
+        $proxy->setId('12345678901231');
+    }
+
+    /**
+     * Генерация идентификатора
+     */
+    public function testGenerateId(): void
+    {
+        $proxy = Proxy::factory(static::$httpProxy);
+        $this->assertNull($proxy->getId());
+        $id = $proxy->generateId();
+        $this->assertEquals($id, $proxy->getId());
+    }
 }

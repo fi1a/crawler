@@ -29,6 +29,7 @@ class TestCase extends PHPUnitTestCase
      * @var array<array-key, mixed>
      */
     protected static $httpProxy = [
+        'id' => null,
         'type' => 'http',
         'host' => HTTP_PROXY_HOST,
         'port' => HTTP_PROXY_PORT,
@@ -43,6 +44,7 @@ class TestCase extends PHPUnitTestCase
      * @var array<array-key, mixed>
      */
     protected static $socks5Proxy = [
+        'id' => null,
         'type' => 'socks5',
         'host' => SOCKS5_PROXY_HOST,
         'port' => SOCKS5_PROXY_PORT,

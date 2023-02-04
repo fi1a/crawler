@@ -15,7 +15,7 @@ interface ProxyStorageInterface
     public function load(): ProxyCollectionInterface;
 
     /**
-     * Сохранить коллекцию прокси в хранилище
+     * Сохранить прокси в хранилище
      */
-    public function save(ProxyCollectionInterface $collection): bool;
+    public function save(ProxyInterface $proxy): bool;
 }

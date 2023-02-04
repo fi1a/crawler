@@ -69,7 +69,34 @@ class FilesystemAdapter implements StorageAdapterInterface
     /**
      * @inheritDoc
      */
-    public function save(ProxyCollectionInterface $collection): bool
+    public function save(ProxyInterface $proxy): bool
+    {
+        $collection = $this->load();
+
+        if ($proxy->getId() === null) {
+            $proxy->generateId();
+            $collection[] = $proxy;
+
+            return $this->doSave($collection);
+        }
+
+        /**
+         * @var array-key $index
+         * @var ProxyInterface $collectionProxy
+         */
+        foreach ($collection as $index => $collectionProxy) {
+            if ($collectionProxy->getId() === $proxy->getId()) {
+                $collection[$index] = $proxy;
+            }
+        }
+
+        return $this->doSave($collection);
+    }
+
+    /**
+     * Сохранение коллекции прокси
+     */
+    protected function doSave(ProxyCollectionInterface $collection): bool
     {
         $json = [];
         foreach ($collection as $proxy) {

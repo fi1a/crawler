@@ -6,6 +6,7 @@ namespace Fi1a\Unit\Crawler\Proxy;
 
 use ErrorException;
 use Fi1a\Crawler\Proxy\FilesystemAdapter;
+use Fi1a\Crawler\Proxy\ProxyInterface;
 use Fi1a\Unit\Crawler\TestCases\TestCase;
 
 /**
@@ -20,13 +21,23 @@ class FilesystemAdapterTest extends TestCase
     {
         $adapter = new FilesystemAdapter($this->runtimeFolder);
 
-        $collection = $adapter->load();
-        $this->assertCount(0, $collection);
         $collection = $this->getProxyCollection();
         $this->assertCount(10, $collection);
-        $adapter->save($collection);
+        foreach ($collection as $proxy) {
+            $adapter->save($proxy);
+        }
         $collection = $adapter->load();
         $this->assertCount(10, $collection);
+        /** @var ProxyInterface $proxy */
+        $proxy = $collection[0];
+        $proxy->setAttempts(10);
+        $adapter->save($proxy);
+
+        $collection = $adapter->load();
+        $this->assertCount(10, $collection);
+        /** @var ProxyInterface $proxy */
+        $proxy = $collection[0];
+        $this->assertEquals(10, $proxy->getAttempts());
     }
 
     /**

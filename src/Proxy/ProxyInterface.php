@@ -13,6 +13,25 @@ use Fi1a\HttpClient\Proxy\ProxyInterface as HttpClientProxyInterface;
 interface ProxyInterface extends HttpClientProxyInterface
 {
     /**
+     * Установить идентификатор
+     *
+     * @return $this
+     */
+    public function setId(?string $id);
+
+    /**
+     * Вернуть идентификатор
+     *
+     * @return mixed
+     */
+    public function getId(): ?string;
+
+    /**
+     * Генерирует идентификтор
+     */
+    public function generateId(): string;
+
+    /**
      * Установить число попыток с ошибкой
      *
      * @return $this
