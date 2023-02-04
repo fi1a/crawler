@@ -6,6 +6,11 @@ namespace Fi1a\Unit\Crawler\TestCases;
 
 use Fi1a\Crawler\Item;
 use Fi1a\Crawler\ItemInterface;
+use Fi1a\Crawler\Proxy\FilesystemAdapter;
+use Fi1a\Crawler\Proxy\ProxyCollection;
+use Fi1a\Crawler\Proxy\ProxyCollectionInterface;
+use Fi1a\Crawler\Proxy\ProxyStorage;
+use Fi1a\Crawler\Proxy\ProxyStorageInterface;
 use Fi1a\Http\Uri;
 use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 use RecursiveDirectoryIterator;
@@ -103,5 +108,34 @@ class TestCase extends PHPUnitTestCase
         $item->setPrepareBody(file_get_contents(__DIR__ . '/../Fixtures/Server/equals/index.html'));
 
         return $item;
+    }
+
+    /**
+     * Возвращает хранилище прокси
+     */
+    protected function getProxyStorage(): ProxyStorageInterface
+    {
+        return new ProxyStorage(new FilesystemAdapter($this->runtimeFolder));
+    }
+
+    /**
+     * Возвращает коллекцию прокси
+     */
+    protected function getProxyCollection(): ProxyCollectionInterface
+    {
+        $collection = new ProxyCollection();
+
+        $collection[] = static::$httpProxy;
+        $collection[] = static::$socks5Proxy;
+        $collection[] = static::$httpProxy;
+        $collection[] = static::$socks5Proxy;
+        $collection[] = static::$httpProxy;
+        $collection[] = static::$socks5Proxy;
+        $collection[] = static::$httpProxy;
+        $collection[] = static::$socks5Proxy;
+        $collection[] = static::$httpProxy;
+        $collection[] = static::$socks5Proxy;
+
+        return $collection;
     }
 }
