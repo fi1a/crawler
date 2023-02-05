@@ -11,8 +11,8 @@ use Fi1a\Crawler\Config;
 use Fi1a\Crawler\ConfigInterface;
 use Fi1a\Crawler\Crawler;
 use Fi1a\Crawler\CrawlerInterface;
-use Fi1a\Crawler\ItemStorages\FilesystemAdapter;
 use Fi1a\Crawler\ItemStorages\ItemStorage;
+use Fi1a\Crawler\ItemStorages\StorageAdapters\LocalFilesystemAdapter;
 use Fi1a\Crawler\PrepareItem\PrepareHtmlItem;
 use Fi1a\Crawler\Proxy\ProxyCollection;
 use Fi1a\Crawler\Proxy\Selections\OnlyActive;
@@ -53,7 +53,7 @@ class CrawlerTest extends TestCase
      */
     protected function getCrawler(): CrawlerInterface
     {
-        $crawler = new Crawler($this->getConfig(), new ItemStorage(new FilesystemAdapter($this->runtimeFolder)));
+        $crawler = new Crawler($this->getConfig(), new ItemStorage(new LocalFilesystemAdapter($this->runtimeFolder)));
 
         $crawler->setWriter(new FileWriter($this->runtimeFolder . '/web'));
 
@@ -67,7 +67,7 @@ class CrawlerTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
         $config = new Config();
-        $crawler = new Crawler($config, new ItemStorage(new FilesystemAdapter($this->runtimeFolder)));
+        $crawler = new Crawler($config, new ItemStorage(new LocalFilesystemAdapter($this->runtimeFolder)));
         $crawler->run();
     }
 
@@ -78,7 +78,7 @@ class CrawlerTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
         $config = new Config();
-        $crawler = new Crawler($config, new ItemStorage(new FilesystemAdapter($this->runtimeFolder)));
+        $crawler = new Crawler($config, new ItemStorage(new LocalFilesystemAdapter($this->runtimeFolder)));
         $crawler->download();
     }
 
@@ -90,7 +90,7 @@ class CrawlerTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $config = new Config();
         $config->addStartUri($this->getUrl('/index.html'));
-        $crawler = new Crawler($config, new ItemStorage(new FilesystemAdapter($this->runtimeFolder)));
+        $crawler = new Crawler($config, new ItemStorage(new LocalFilesystemAdapter($this->runtimeFolder)));
         $crawler->run();
     }
 
@@ -102,7 +102,7 @@ class CrawlerTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $config = new Config();
         $config->addStartUri($this->getUrl('/index.html'));
-        $crawler = new Crawler($config, new ItemStorage(new FilesystemAdapter($this->runtimeFolder)));
+        $crawler = new Crawler($config, new ItemStorage(new LocalFilesystemAdapter($this->runtimeFolder)));
         $crawler->write();
     }
 
@@ -130,7 +130,7 @@ class CrawlerTest extends TestCase
     {
         $crawler = new Crawler(
             $this->getConfig(),
-            new ItemStorage(new FilesystemAdapter($this->runtimeFolder)),
+            new ItemStorage(new LocalFilesystemAdapter($this->runtimeFolder)),
             $this->getProxyStorageWithSavedProxy()
         );
         $crawler->setProxySelection(new SortedByTime(new OnlyActive()));
@@ -188,7 +188,7 @@ class CrawlerTest extends TestCase
         $output->setStream(new Stream('php://memory'));
         $crawler = new Crawler(
             $config,
-            new ItemStorage(new FilesystemAdapter($this->runtimeFolder)),
+            new ItemStorage(new LocalFilesystemAdapter($this->runtimeFolder)),
             null,
             $output
         );
@@ -216,7 +216,7 @@ class CrawlerTest extends TestCase
 
         $config->getHttpClientConfig()->setSslVerify(false);
 
-        $crawler = new Crawler($config, new ItemStorage(new FilesystemAdapter($this->runtimeFolder)));
+        $crawler = new Crawler($config, new ItemStorage(new LocalFilesystemAdapter($this->runtimeFolder)));
         $crawler->setWriter(new FileWriter($this->runtimeFolder . '/web'));
         $crawler->addRestriction(new UriRestriction($this->getUrl('/')));
 
@@ -229,7 +229,7 @@ class CrawlerTest extends TestCase
         $this->assertEquals(17, $crawler->getItems()->getWrited()->count());
 
         $config->setLifetime(0);
-        $crawler2 = new Crawler($config, new ItemStorage(new FilesystemAdapter($this->runtimeFolder)));
+        $crawler2 = new Crawler($config, new ItemStorage(new LocalFilesystemAdapter($this->runtimeFolder)));
         $crawler2->setWriter(new FileWriter($this->runtimeFolder . '/web'));
         $crawler2->addRestriction(new UriRestriction($this->getUrl('/')));
 
@@ -299,7 +299,7 @@ class CrawlerTest extends TestCase
     {
         $storage = $this->getMockBuilder(ItemStorage::class)
             ->onlyMethods(['getBody'])
-            ->setConstructorArgs([new FilesystemAdapter($this->runtimeFolder)])
+            ->setConstructorArgs([new LocalFilesystemAdapter($this->runtimeFolder)])
             ->getMock();
 
         $storage->expects($this->any())->method('getBody')->willReturn(false);
@@ -323,7 +323,7 @@ class CrawlerTest extends TestCase
 
         $writer->expects($this->any())->method('write')->willReturn(false);
 
-        $crawler = new Crawler($this->getConfig(), new ItemStorage(new FilesystemAdapter($this->runtimeFolder)));
+        $crawler = new Crawler($this->getConfig(), new ItemStorage(new LocalFilesystemAdapter($this->runtimeFolder)));
         $crawler->setWriter($writer);
 
         $crawler->run();
@@ -369,7 +369,7 @@ class CrawlerTest extends TestCase
      */
     public function testWriterMethods(): void
     {
-        $crawler = new Crawler($this->getConfig(), new ItemStorage(new FilesystemAdapter($this->runtimeFolder)));
+        $crawler = new Crawler($this->getConfig(), new ItemStorage(new LocalFilesystemAdapter($this->runtimeFolder)));
         $this->assertFalse($crawler->hasWriter());
         $this->assertFalse($crawler->hasWriter(MimeInterface::HTML));
         $crawler->setWriter(new FileWriter($this->runtimeFolder . '/web'));

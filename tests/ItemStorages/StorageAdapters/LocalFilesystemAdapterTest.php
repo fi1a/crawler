@@ -2,26 +2,26 @@
 
 declare(strict_types=1);
 
-namespace Fi1a\Unit\Crawler\ItemStorages;
+namespace Fi1a\Unit\Crawler\ItemStorages\StorageAdapters;
 
 use ErrorException;
 use Fi1a\Crawler\Item;
 use Fi1a\Crawler\ItemCollection;
-use Fi1a\Crawler\ItemStorages\FilesystemAdapter;
+use Fi1a\Crawler\ItemStorages\StorageAdapters\LocalFilesystemAdapter;
 use Fi1a\Http\Uri;
 use Fi1a\Unit\Crawler\TestCases\TestCase;
 
 /**
  * Хранение элементов в файловой системе
  */
-class FilesystemAdapterTest extends TestCase
+class LocalFilesystemAdapterTest extends TestCase
 {
     /**
      * Сохранение и загрузка
      */
     public function testSaveAndLoad(): void
     {
-        $adapter = new FilesystemAdapter($this->runtimeFolder . '/storage');
+        $adapter = new LocalFilesystemAdapter($this->runtimeFolder . '/storage');
 
         $this->deleteDir($this->runtimeFolder . '/storage');
         $this->assertTrue($adapter->clear());
@@ -52,7 +52,7 @@ class FilesystemAdapterTest extends TestCase
      */
     public function testBody(): void
     {
-        $adapter = new FilesystemAdapter($this->runtimeFolder . '/storage');
+        $adapter = new LocalFilesystemAdapter($this->runtimeFolder . '/storage');
 
         $item = new Item(new Uri('/index.html'));
 
@@ -70,7 +70,7 @@ class FilesystemAdapterTest extends TestCase
         $this->deleteDir($this->runtimeFolder);
         mkdir($this->runtimeFolder, 0000, true);
         try {
-            new FilesystemAdapter($this->runtimeFolder . '/storage');
+            new LocalFilesystemAdapter($this->runtimeFolder . '/storage');
         } catch (ErrorException $exception) {
             chmod($this->runtimeFolder, 0777);
 
@@ -88,7 +88,7 @@ class FilesystemAdapterTest extends TestCase
         mkdir($this->runtimeFolder, 0777, true);
         mkdir($this->runtimeFolder . '/storage', 0000);
         try {
-            new FilesystemAdapter($this->runtimeFolder . '/storage');
+            new LocalFilesystemAdapter($this->runtimeFolder . '/storage');
         } catch (ErrorException $exception) {
             chmod($this->runtimeFolder . '/storage', 0777);
 
@@ -106,7 +106,7 @@ class FilesystemAdapterTest extends TestCase
         mkdir($this->runtimeFolder . '/storage', 0777, true);
         mkdir($this->runtimeFolder . '/storage/body', 0000);
         try {
-            new FilesystemAdapter($this->runtimeFolder . '/storage');
+            new LocalFilesystemAdapter($this->runtimeFolder . '/storage');
         } catch (ErrorException $exception) {
             chmod($this->runtimeFolder . '/storage/body', 0777);
 
