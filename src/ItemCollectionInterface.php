@@ -31,4 +31,39 @@ interface ItemCollectionInterface extends CollectionInterface
      * @return static
      */
     public function getWrited();
+
+    /**
+     * Возвращает все элементы изображений
+     *
+     * @return static
+     */
+    public function getImages();
+
+    /**
+     * Возвращает все элементы файлов
+     *
+     * @return static
+     */
+    public function getFiles();
+
+    /**
+     * Возвращает все элементы страниц
+     *
+     * @return static
+     */
+    public function getPages();
+
+    /**
+     * Возвращает все элементы css файлов
+     *
+     * @return static
+     */
+    public function getCss();
+
+    /**
+     * Возвращает все элементы js файлов
+     *
+     * @return static
+     */
+    public function getJs();
 }
