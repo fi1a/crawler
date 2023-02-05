@@ -131,7 +131,7 @@ class FileWriterTest extends TestCase
     public function testNotCreatedPath(): void
     {
         $this->expectException(ErrorException::class);
-        $writer = new FileWriter($this->runtimeFolder . '/web');
+        $writer = new FileWriter($this->runtimeFolder . '/web', null, false);
         $item = new Item(new Uri($this->getUrl('/path/index.html')), 0);
         $item->setNewItemUri(new Uri('/path/index.html'));
         try {
@@ -142,5 +142,22 @@ class FileWriterTest extends TestCase
 
             throw $exception;
         }
+    }
+
+    /**
+     * Тестирование очищения директории перед записью
+     */
+    public function testClearDir(): void
+    {
+        $writer = $this->getMockBuilder(FileWriter::class)
+            ->onlyMethods(['clearDir'])
+            ->setConstructorArgs([$this->runtimeFolder . '/web'])
+            ->getMock();
+
+        $writer->expects($this->once())->method('clearDir');
+        $item = new Item(new Uri($this->getUrl('/path/index.html')), 0);
+        $item->setNewItemUri(new Uri('/path/index.html'));
+        $writer->write($item, $this->getOutput(), $this->getLogger());
+        $writer->write($item, $this->getOutput(), $this->getLogger());
     }
 }
