@@ -6,6 +6,7 @@ namespace Fi1a\Unit\Crawler;
 
 use Fi1a\Crawler\Config;
 use Fi1a\Crawler\ConfigInterface;
+use Fi1a\Http\Mime;
 use Fi1a\HttpClient\Config as HttpClientConfig;
 use Fi1a\HttpClient\ConfigInterface as HttpClientConfigInterface;
 use Fi1a\HttpClient\Handlers\CurlHandler;
@@ -182,5 +183,17 @@ class ConfigTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $config = new Config();
         $config->setDelay([1, 2, 3]);
+    }
+
+    /**
+     * Ограничение на загружаемый файл по типу контента
+     */
+    public function testSizeLimit(): void
+    {
+        $config = new Config();
+        $this->assertEquals([], $config->getSizeLimits());
+        $config->setSizeLimit(1);
+        $config->setSizeLimit(2, Mime::HTML);
+        $this->assertEquals(['*' => 1, Mime::HTML => 2], $config->getSizeLimits());
     }
 }

@@ -102,9 +102,56 @@ class CrawlerTest extends TestCase
         $crawler->run();
         $this->assertCount(1, $crawler->getRestrictions());
         $this->assertTrue($crawler->hasUriParser());
-        $this->assertEquals(9, $crawler->getItems()->count());
+        $this->assertEquals(10, $crawler->getItems()->count());
+        $this->assertEquals(6, $crawler->getItems()->getDownloaded()->count());
+        $this->assertEquals(10, $crawler->getItems()->getProcessed()->count());
+        $this->assertEquals(6, $crawler->getItems()->getWrited()->count());
+    }
+
+    /**
+     * Ограничения по размеру скачиваемого файла
+     */
+    public function testSizeLimits(): void
+    {
+        $config = $this->getConfig();
+
+        $config->setSizeLimit(1);
+
+        $crawler = new Crawler($config, new ItemStorage(new LocalFilesystemAdapter($this->runtimeFolder)));
+
+        $crawler->setWriter(new FileWriter($this->runtimeFolder . '/web'));
+
+        $crawler->clearStorageData();
+        $crawler->run();
+        $this->assertCount(1, $crawler->getRestrictions());
+        $this->assertTrue($crawler->hasUriParser());
+        $this->assertEquals(2, $crawler->getItems()->count());
+        $this->assertEquals(0, $crawler->getItems()->getDownloaded()->count());
+        $this->assertEquals(2, $crawler->getItems()->getProcessed()->count());
+        $this->assertEquals(0, $crawler->getItems()->getWrited()->count());
+    }
+
+    /**
+     * Ограничения по размеру скачиваемого файла
+     */
+    public function testSizeLimitsByMimeType(): void
+    {
+        $config = $this->getConfig();
+
+        $config->setSizeLimit(10000000);
+        $config->setSizeLimit(1, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+
+        $crawler = new Crawler($config, new ItemStorage(new LocalFilesystemAdapter($this->runtimeFolder)));
+
+        $crawler->setWriter(new FileWriter($this->runtimeFolder . '/web'));
+
+        $crawler->clearStorageData();
+        $crawler->run();
+        $this->assertCount(1, $crawler->getRestrictions());
+        $this->assertTrue($crawler->hasUriParser());
+        $this->assertEquals(10, $crawler->getItems()->count());
         $this->assertEquals(5, $crawler->getItems()->getDownloaded()->count());
-        $this->assertEquals(9, $crawler->getItems()->getProcessed()->count());
+        $this->assertEquals(10, $crawler->getItems()->getProcessed()->count());
         $this->assertEquals(5, $crawler->getItems()->getWrited()->count());
     }
 
@@ -125,10 +172,10 @@ class CrawlerTest extends TestCase
         $this->assertTrue(time() - $startTime >= $crawler->getItems()->getDownloaded()->count());
         $this->assertCount(1, $crawler->getRestrictions());
         $this->assertTrue($crawler->hasUriParser());
-        $this->assertEquals(9, $crawler->getItems()->count());
-        $this->assertEquals(5, $crawler->getItems()->getDownloaded()->count());
-        $this->assertEquals(9, $crawler->getItems()->getProcessed()->count());
-        $this->assertEquals(5, $crawler->getItems()->getWrited()->count());
+        $this->assertEquals(10, $crawler->getItems()->count());
+        $this->assertEquals(6, $crawler->getItems()->getDownloaded()->count());
+        $this->assertEquals(10, $crawler->getItems()->getProcessed()->count());
+        $this->assertEquals(6, $crawler->getItems()->getWrited()->count());
     }
 
     /**
@@ -148,10 +195,10 @@ class CrawlerTest extends TestCase
         $crawler->run();
         $this->assertCount(1, $crawler->getRestrictions());
         $this->assertTrue($crawler->hasUriParser());
-        $this->assertEquals(9, $crawler->getItems()->count());
-        $this->assertEquals(5, $crawler->getItems()->getDownloaded()->count());
-        $this->assertEquals(9, $crawler->getItems()->getProcessed()->count());
-        $this->assertEquals(5, $crawler->getItems()->getWrited()->count());
+        $this->assertEquals(10, $crawler->getItems()->count());
+        $this->assertEquals(6, $crawler->getItems()->getDownloaded()->count());
+        $this->assertEquals(10, $crawler->getItems()->getProcessed()->count());
+        $this->assertEquals(6, $crawler->getItems()->getWrited()->count());
     }
 
     /**
@@ -171,10 +218,10 @@ class CrawlerTest extends TestCase
         $crawler->run();
         $this->assertCount(1, $crawler->getRestrictions());
         $this->assertTrue($crawler->hasUriParser());
-        $this->assertEquals(9, $crawler->getItems()->count());
-        $this->assertEquals(5, $crawler->getItems()->getDownloaded()->count());
-        $this->assertEquals(9, $crawler->getItems()->getProcessed()->count());
-        $this->assertEquals(5, $crawler->getItems()->getWrited()->count());
+        $this->assertEquals(10, $crawler->getItems()->count());
+        $this->assertEquals(6, $crawler->getItems()->getDownloaded()->count());
+        $this->assertEquals(10, $crawler->getItems()->getProcessed()->count());
+        $this->assertEquals(6, $crawler->getItems()->getWrited()->count());
     }
 
     /**
@@ -228,10 +275,10 @@ class CrawlerTest extends TestCase
         $crawler->run();
         $this->assertCount(1, $crawler->getRestrictions());
         $this->assertTrue($crawler->hasUriParser());
-        $this->assertEquals(9, $crawler->getItems()->count());
-        $this->assertEquals(5, $crawler->getItems()->getDownloaded()->count());
-        $this->assertEquals(9, $crawler->getItems()->getProcessed()->count());
-        $this->assertEquals(5, $crawler->getItems()->getWrited()->count());
+        $this->assertEquals(10, $crawler->getItems()->count());
+        $this->assertEquals(6, $crawler->getItems()->getDownloaded()->count());
+        $this->assertEquals(10, $crawler->getItems()->getProcessed()->count());
+        $this->assertEquals(6, $crawler->getItems()->getWrited()->count());
     }
 
     /**
@@ -280,7 +327,7 @@ class CrawlerTest extends TestCase
         $crawler = $this->getCrawler();
 
         $crawler->run();
-        $this->assertCount(9, $crawler->getItems());
+        $this->assertCount(10, $crawler->getItems());
     }
 
     /**
