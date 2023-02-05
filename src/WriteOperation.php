@@ -112,7 +112,12 @@ class WriteOperation extends AbstractOperation
                         $prepareItem = $this->prepareItems[$this->getMime($mime)];
                     }
                     if ($prepareItem) {
-                        $item->setPrepareBody($prepareItem->prepare($item, $this->items));
+                        $item->setPrepareBody($prepareItem->prepare(
+                            $item,
+                            $this->items,
+                            $this->output,
+                            $this->logger
+                        ));
                     }
                 }
                 $writer = $this->writers[$this->getMime()];
@@ -120,7 +125,7 @@ class WriteOperation extends AbstractOperation
                 if ($mime && $this->hasWriter($mime)) {
                     $writer = $this->writers[$this->getMime($mime)];
                 }
-                if ($writer->write($item)) {
+                if ($writer->write($item, $this->output, $this->logger)) {
                     $item->setWriteStatus(true);
 
                     $this->output->writeln(

@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 namespace Fi1a\Unit\Crawler\TestCases;
 
+use Fi1a\Console\IO\ConsoleOutput;
+use Fi1a\Console\IO\ConsoleOutputInterface;
+use Fi1a\Console\IO\Formatter;
+use Fi1a\Console\IO\Stream;
+use Fi1a\Crawler\Config;
+use Fi1a\Crawler\ConfigInterface;
 use Fi1a\Crawler\Item;
 use Fi1a\Crawler\ItemInterface;
 use Fi1a\Crawler\Proxy\Proxy;
@@ -14,6 +20,8 @@ use Fi1a\Crawler\Proxy\ProxyStorage;
 use Fi1a\Crawler\Proxy\ProxyStorageInterface;
 use Fi1a\Crawler\Proxy\StorageAdapters\LocalFilesystemAdapter;
 use Fi1a\Http\Uri;
+use Fi1a\Log\Logger;
+use Fi1a\Log\LoggerInterface;
 use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -183,5 +191,40 @@ class TestCase extends PHPUnitTestCase
         }
 
         return $proxyStorage;
+    }
+
+    /**
+     * Возвращает конфиг
+     */
+    protected function getConfig(): ConfigInterface
+    {
+        $config = new Config();
+
+        $config->addStartUri($this->getUrl('/index.html'));
+        $config->addStartUri($this->getUrl('/link1.html'));
+        $config->setVerbose(ConfigInterface::VERBOSE_NONE);
+
+        $config->getHttpClientConfig()->setSslVerify(false);
+
+        return $config;
+    }
+
+    /**
+     * Вывод в консоли
+     */
+    protected function getOutput(): ConsoleOutputInterface
+    {
+        $output = new ConsoleOutput(new Formatter());
+        $output->setStream(new Stream('php://memory'));
+
+        return $output;
+    }
+
+    /**
+     * Логгер
+     */
+    protected function getLogger(): LoggerInterface
+    {
+        return new Logger($this->getConfig()->getLogChannel());
     }
 }

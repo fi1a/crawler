@@ -49,7 +49,9 @@ class ProcessOperation extends AbstractOperation
             OutputInterface::VERBOSE_HIGHT
         );
 
-        $newItemUri = $this->uriTransformer ? $this->uriTransformer->transform($item) : $item->getItemUri();
+        $newItemUri = $this->uriTransformer
+            ? $this->uriTransformer->transform($item, $this->output, $this->logger)
+            : $item->getItemUri();
         $item->setNewItemUri($newItemUri)
             ->setProcessStatus(true);
 

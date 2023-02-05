@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Fi1a\Crawler\PrepareItem;
 
+use Fi1a\Console\IO\ConsoleOutputInterface;
 use Fi1a\Crawler\ItemCollectionInterface;
 use Fi1a\Crawler\ItemInterface;
 use Fi1a\Http\Uri;
+use Fi1a\Log\LoggerInterface;
 use Fi1a\SimpleQuery\SimpleQuery;
 use Fi1a\SimpleQuery\SimpleQueryInterface;
 use InvalidArgumentException;
@@ -19,8 +21,12 @@ class PrepareHtmlItem implements PrepareItemInterface
     /**
      * @inheritDoc
      */
-    public function prepare(ItemInterface $item, ItemCollectionInterface $items)
-    {
+    public function prepare(
+        ItemInterface $item,
+        ItemCollectionInterface $items,
+        ConsoleOutputInterface $output,
+        LoggerInterface $logger
+    ) {
         $sq = new SimpleQuery((string) $item->getBody());
         $this->replace('a', 'href', $sq, $item, $items);
         $this->replace('img', 'src', $sq, $item, $items);

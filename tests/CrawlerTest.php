@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Fi1a\Unit\Crawler;
 
-use Fi1a\Console\IO\ConsoleOutput;
-use Fi1a\Console\IO\Formatter;
-use Fi1a\Console\IO\Stream;
 use Fi1a\Crawler\Config;
 use Fi1a\Crawler\ConfigInterface;
 use Fi1a\Crawler\Crawler;
@@ -33,22 +30,6 @@ use InvalidArgumentException;
  */
 class CrawlerTest extends TestCase
 {
-    /**
-     * Возвращает конфиг
-     */
-    protected function getConfig(): ConfigInterface
-    {
-        $config = new Config();
-
-        $config->addStartUri($this->getUrl('/index.html'));
-        $config->addStartUri($this->getUrl('/link1.html'));
-        $config->setVerbose(ConfigInterface::VERBOSE_NONE);
-
-        $config->getHttpClientConfig()->setSslVerify(false);
-
-        return $config;
-    }
-
     /**
      * Web Crawler
      */
@@ -211,13 +192,11 @@ class CrawlerTest extends TestCase
     {
         $config = $this->getConfig();
         $config->setVerbose(ConfigInterface::VERBOSE_DEBUG);
-        $output = new ConsoleOutput(new Formatter());
-        $output->setStream(new Stream('php://memory'));
         $crawler = new Crawler(
             $config,
             new ItemStorage(new LocalFilesystemAdapter($this->runtimeFolder)),
             null,
-            $output
+            $this->getOutput()
         );
         $crawler->setWriter(new FileWriter($this->runtimeFolder . '/web'));
         $crawler->setUriTransformer(new SiteUriTransformer());

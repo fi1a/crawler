@@ -556,7 +556,7 @@ class DownloadOperation extends AbstractOperation
             $parser = $this->uriParsers[$this->getMime($mime)];
         }
 
-        $collection = $parser->parse($item);
+        $collection = $parser->parse($item, $this->output, $this->logger);
         /** @var UriInterface $uri */
         foreach ($collection as $uri) {
             $uri = $item->getAbsoluteUri($uri);
