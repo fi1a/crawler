@@ -76,6 +76,15 @@ class ProxyTest extends TestCase
     }
 
     /**
+     * Тип
+     */
+    public function testType(): void
+    {
+        $proxy = Proxy::factory(static::$httpProxy);
+        $this->assertEquals('http', $proxy->getType());
+    }
+
+    /**
      * Хост
      */
     public function testHost(): void

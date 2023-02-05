@@ -9,6 +9,7 @@ use Fi1a\Crawler\ItemInterface;
 use Fi1a\Crawler\Proxy\Proxy;
 use Fi1a\Crawler\Proxy\ProxyCollection;
 use Fi1a\Crawler\Proxy\ProxyCollectionInterface;
+use Fi1a\Crawler\Proxy\ProxyInterface;
 use Fi1a\Crawler\Proxy\ProxyStorage;
 use Fi1a\Crawler\Proxy\ProxyStorageInterface;
 use Fi1a\Crawler\Proxy\StorageAdapters\FilesystemAdapter;
@@ -134,7 +135,17 @@ class TestCase extends PHPUnitTestCase
 
         $collection[] = static::$socks5Proxy;
 
-        $collection[] = static::$httpProxy;
+        $collection[] = [
+            'id' => null,
+            'type' => 'http',
+            'host' => HTTP_PROXY_HOST,
+            'port' => 100500,
+            'userName' => HTTP_PROXY_USERNAME,
+            'password' => HTTP_PROXY_PASSWORD,
+            'attempts' => 0,
+            'active' => true,
+            'lastUse' => null,
+        ];
 
         $proxy = Proxy::factory(static::$socks5Proxy);
         $proxy->setActive(false);
@@ -157,5 +168,20 @@ class TestCase extends PHPUnitTestCase
         $collection[] = static::$socks5Proxy;
 
         return $collection;
+    }
+
+    /**
+     * Возвращает хранилище прокси
+     */
+    protected function getProxyStorageWithSavedProxy(): ProxyStorageInterface
+    {
+        $proxyStorage = $this->getProxyStorage();
+
+        foreach ($this->getProxyCollection() as $proxy) {
+            assert($proxy instanceof ProxyInterface);
+            $proxyStorage->save($proxy);
+        }
+
+        return $proxyStorage;
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Fi1a\Crawler;
 
+use DateTime;
 use Fi1a\Collection\Queue;
 use Fi1a\Collection\QueueInterface;
 use Fi1a\Console\Component\PanelComponent\PanelComponent;
@@ -19,6 +20,10 @@ use Fi1a\Console\IO\Style\ColorInterface;
 use Fi1a\Crawler\ItemStorages\ItemStorageInterface;
 use Fi1a\Crawler\PrepareItem\PrepareHtmlItem;
 use Fi1a\Crawler\PrepareItem\PrepareItemInterface;
+use Fi1a\Crawler\Proxy\ProxyCollectionInterface;
+use Fi1a\Crawler\Proxy\ProxyInterface;
+use Fi1a\Crawler\Proxy\ProxyStorageInterface;
+use Fi1a\Crawler\Proxy\Selections\ProxySelectionInterface;
 use Fi1a\Crawler\Restrictions\RestrictionCollection;
 use Fi1a\Crawler\Restrictions\RestrictionCollectionInterface;
 use Fi1a\Crawler\Restrictions\RestrictionInterface;
@@ -28,11 +33,15 @@ use Fi1a\Crawler\UriParsers\UriParserInterface;
 use Fi1a\Crawler\UriTransformers\SiteUriTransformer;
 use Fi1a\Crawler\UriTransformers\UriTransformerInterface;
 use Fi1a\Crawler\Writers\WriterInterface;
+use Fi1a\Http\Http;
 use Fi1a\Http\Mime;
 use Fi1a\Http\Uri;
 use Fi1a\Http\UriInterface;
+use Fi1a\HttpClient\Handlers\Exceptions\ConnectionErrorException;
 use Fi1a\HttpClient\HttpClient;
 use Fi1a\HttpClient\HttpClientInterface;
+use Fi1a\HttpClient\Request;
+use Fi1a\HttpClient\Response;
 use Fi1a\Log\LevelInterface;
 use Fi1a\Log\Logger;
 use Fi1a\Log\LoggerInterface;
@@ -106,7 +115,22 @@ class Crawler implements CrawlerInterface
     /**
      * @var ItemStorageInterface
      */
-    protected $storage;
+    protected $itemStorage;
+
+    /**
+     * @var ProxyStorageInterface|null
+     */
+    protected $proxyStorage;
+
+    /**
+     * @var ProxyCollectionInterface|null
+     */
+    protected $proxyCollection;
+
+    /**
+     * @var ProxySelectionInterface|null
+     */
+    protected $proxySelection;
 
     /**
      * @var bool
@@ -115,7 +139,8 @@ class Crawler implements CrawlerInterface
 
     public function __construct(
         ConfigInterface $config,
-        ItemStorageInterface $storage,
+        ItemStorageInterface $itemStorage,
+        ?ProxyStorageInterface $proxyStorage = null,
         ?ConsoleOutputInterface $output = null,
         ?LoggerInterface $logger = null
     ) {
@@ -139,7 +164,8 @@ class Crawler implements CrawlerInterface
         $this->logger = $logger;
         $this->runId = uniqid();
         $this->logger->withContext(['runId' => $this->runId]);
-        $this->storage = $storage;
+        $this->itemStorage = $itemStorage;
+        $this->setProxyStorage($proxyStorage);
         $this->items = new ItemCollection();
         $this->queue = new Queue();
     }
@@ -364,7 +390,44 @@ class Crawler implements CrawlerInterface
      */
     public function clearStorageData()
     {
-        $this->storage->clear();
+        $this->itemStorage->clear();
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setProxyStorage(?ProxyStorageInterface $proxyStorage)
+    {
+        $this->proxyStorage = $proxyStorage;
+        if (!$proxyStorage) {
+            $this->proxyCollection = null;
+
+            return $this;
+        }
+
+        $this->proxyCollection = $proxyStorage->load();
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setProxySelection(?ProxySelectionInterface $proxySelection)
+    {
+        $this->proxySelection = $proxySelection;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setProxyCollection(?ProxyCollectionInterface $collection)
+    {
+        $this->proxyCollection = $collection;
 
         return $this;
     }
@@ -391,7 +454,7 @@ class Crawler implements CrawlerInterface
         );
         $this->logger->debug('Вызван метод добавления uri');
         if ($this->addItemByUri($uri)) {
-            $this->storage->save($this->items);
+            $this->itemStorage->save($this->items);
         }
         $this->output->writeln('', [], null, OutputInterface::VERBOSE_HIGHT);
 
@@ -405,7 +468,7 @@ class Crawler implements CrawlerInterface
     {
         if ($this->needLoadFromStorage) {
             $this->logger->info('Извлечение данных из хранилища');
-            $this->items = $this->storage->load();
+            $this->items = $this->itemStorage->load();
         }
         $this->queue = new Queue();
         foreach ($this->items as $item) {
@@ -691,7 +754,7 @@ class Crawler implements CrawlerInterface
             ],
         );
         $startTime = microtime(true);
-        $this->storage->save($items);
+        $this->itemStorage->save($items);
         $time = microtime(true) - $startTime;
         $this->output->writeln();
         $this->output->writeln(
@@ -785,7 +848,62 @@ class Crawler implements CrawlerInterface
 
         $this->logger->info('GET {{uri}}', ['uri' => $item->getItemUri()->maskedUri()]);
 
-        $response = $this->httpClient->get($item->getItemUri()->uri());
+        $proxyIterator = null;
+        if ($this->proxyCollection) {
+            /** @var \ArrayIterator $proxyIterator */
+            $proxyIterator = $this->proxyCollection->getIterator();
+            if ($this->proxySelection) {
+                /** @var \ArrayIterator $proxyIterator */
+                $proxyIterator = $this->proxySelection
+                    ->selection($this->proxyCollection, $item)
+                    ->getIterator();
+            }
+
+            $proxyIterator->rewind();
+        }
+
+        do {
+            $proxy = null;
+            if ($proxyIterator && $proxyIterator->valid()) {
+                /** @var ProxyInterface $proxy */
+                $proxy = $proxyIterator->current();
+                $proxyIterator->next();
+            }
+
+            if ($proxyIterator && !$proxy) {
+                $response = new Response();
+
+                break;
+            }
+
+            $request = Request::create();
+            $request->withMethod(Http::GET)
+                ->withUri($item->getItemUri());
+
+            if ($proxy) {
+                $request->withProxy($proxy);
+            }
+
+            try {
+                $response = $this->httpClient->send($request);
+            } catch (ConnectionErrorException $exception) {
+                $response = new Response();
+            }
+
+            if ($proxy) {
+                $proxy->setLastUse(new DateTime());
+                if ($response->getStatusCode() === 0) {
+                    $proxy->incrementAttempts();
+                }
+                if ($this->proxyStorage) {
+                    $this->proxyStorage->save($proxy);
+                }
+            }
+
+            if ($response->getStatusCode() !== 0) {
+                break;
+            }
+        } while (true);
 
         $item->setStatusCode($response->getStatusCode())
             ->setReasonPhrase($response->getReasonPhrase())
@@ -793,7 +911,7 @@ class Crawler implements CrawlerInterface
             ->setContentType($response->getBody()->getContentType());
 
         $body = $response->getBody()->getRaw();
-        $this->storage->saveBody($item, $response->getBody()->getRaw());
+        $this->itemStorage->saveBody($item, $response->getBody()->getRaw());
 
         $this->logger->log(
             $item->getDownloadStatus() ? LevelInterface::INFO : LevelInterface::WARNING,
@@ -940,7 +1058,7 @@ class Crawler implements CrawlerInterface
         $item->setWriteStatus(false);
 
         if ($item->getDownloadStatus()) {
-            $body = $this->storage->getBody($item);
+            $body = $this->itemStorage->getBody($item);
             if ($body !== false) {
                 $item->setBody($body);
                 $item->setPrepareBody($body);

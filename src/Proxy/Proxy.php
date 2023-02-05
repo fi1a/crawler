@@ -79,6 +79,14 @@ class Proxy implements ProxyInterface
     /**
      * @inheritDoc
      */
+    public function getType(): string
+    {
+        return $this->proxy->getType();
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function getHost(): string
     {
         return $this->proxy->getHost();
@@ -227,16 +235,11 @@ class Proxy implements ProxyInterface
      */
     public function toArray(): array
     {
-        $type = 'http';
-        if ($this->proxy instanceof Socks5Proxy) {
-            $type = 'socks5';
-        }
-
         $lastUse = $this->getLastUse();
 
         return [
             'id' => $this->getId(),
-            'type' => $type,
+            'type' => $this->getType(),
             'host' => $this->proxy->getHost(),
             'port' => $this->proxy->getPort(),
             'userName' => $this->proxy->getUserName(),
