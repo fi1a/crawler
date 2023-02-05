@@ -150,4 +150,37 @@ class ConfigTest extends TestCase
         $config = new Config();
         $config->setLifetime(-10);
     }
+
+    /**
+     * Задержка между запросами
+     */
+    public function testDelay(): void
+    {
+        $config = new Config();
+        $this->assertEquals([0, 0], $config->getDelay());
+        $config->setDelay(1);
+        $this->assertEquals([1, 1], $config->getDelay());
+        $config->setDelay([1, 2]);
+        $this->assertEquals([1, 2], $config->getDelay());
+    }
+
+    /**
+     * Задержка между запросами
+     */
+    public function testDelayStringDelayException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $config = new Config();
+        $config->setDelay('abc');
+    }
+
+    /**
+     * Задержка между запросами
+     */
+    public function testDelayArrayDelayException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $config = new Config();
+        $config->setDelay([1, 2, 3]);
+    }
 }

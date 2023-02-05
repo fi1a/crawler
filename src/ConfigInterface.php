@@ -109,4 +109,20 @@ interface ConfigInterface extends ValueObjectInterface
      * Вернуть время жизни элементов в хранилище
      */
     public function getLifetime(): int;
+
+    /**
+     * Установить паузу между запросами
+     *
+     * @param int|array<array-key, int>|mixed $delay
+     *
+     * @return mixed
+     */
+    public function setDelay($delay);
+
+    /**
+     * Вернуть паузу между запросами
+     *
+     * @return array<array-key, int>
+     */
+    public function getDelay(): array;
 }

@@ -232,6 +232,13 @@ class DownloadOperation extends AbstractOperation
                 $response = new Response();
             }
 
+            $delay = $this->config->getDelay();
+            if ($delay[0]) {
+                /** @var positive-int $delayInSeconds */
+                $delayInSeconds = rand($delay[0], $delay[1]);
+                sleep($delayInSeconds);
+            }
+
             if ($proxy) {
                 $proxy->setLastUse(new DateTime());
                 if ($response->getStatusCode() === 0) {
