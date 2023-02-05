@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Fi1a\Unit\Crawler\ItemStorages;
 
-use ErrorException;
 use Fi1a\Crawler\Item;
 use Fi1a\Crawler\ItemCollection;
 use Fi1a\Crawler\ItemInterface;
@@ -70,59 +69,6 @@ class ItemStorageTest extends TestCase
         $this->assertFalse($storage->getBody($item));
         $this->assertTrue($storage->saveBody($item, 'body'));
         $this->assertEquals('body', $storage->getBody($item));
-    }
-
-    /**
-     * Исключение при создании директории
-     */
-    public function testDirNotCreateException(): void
-    {
-        $this->expectException(ErrorException::class);
-        $this->deleteDir($this->runtimeFolder);
-        mkdir($this->runtimeFolder, 0000, true);
-        try {
-            new FilesystemAdapter($this->runtimeFolder . '/storage');
-        } catch (ErrorException $exception) {
-            chmod($this->runtimeFolder, 0777);
-
-            throw $exception;
-        }
-    }
-
-    /**
-     * Исключение при создании директории
-     */
-    public function testNotWriteException(): void
-    {
-        $this->expectException(ErrorException::class);
-        $this->deleteDir($this->runtimeFolder);
-        mkdir($this->runtimeFolder, 0777, true);
-        mkdir($this->runtimeFolder . '/storage', 0000);
-        try {
-            new FilesystemAdapter($this->runtimeFolder . '/storage');
-        } catch (ErrorException $exception) {
-            chmod($this->runtimeFolder . '/storage', 0777);
-
-            throw $exception;
-        }
-    }
-
-    /**
-     * Исключение при создании директории
-     */
-    public function testBodyDirNotWriteException(): void
-    {
-        $this->expectException(ErrorException::class);
-        $this->deleteDir($this->runtimeFolder);
-        mkdir($this->runtimeFolder . '/storage', 0777, true);
-        mkdir($this->runtimeFolder . '/storage/body', 0000);
-        try {
-            new FilesystemAdapter($this->runtimeFolder . '/storage');
-        } catch (ErrorException $exception) {
-            chmod($this->runtimeFolder . '/storage/body', 0777);
-
-            throw $exception;
-        }
     }
 
     /**

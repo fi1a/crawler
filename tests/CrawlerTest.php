@@ -14,6 +14,9 @@ use Fi1a\Crawler\CrawlerInterface;
 use Fi1a\Crawler\ItemStorages\FilesystemAdapter;
 use Fi1a\Crawler\ItemStorages\ItemStorage;
 use Fi1a\Crawler\PrepareItem\PrepareHtmlItem;
+use Fi1a\Crawler\Proxy\ProxyCollection;
+use Fi1a\Crawler\Proxy\Selections\OnlyActive;
+use Fi1a\Crawler\Proxy\Selections\SortedByTime;
 use Fi1a\Crawler\Restrictions\UriRestriction;
 use Fi1a\Crawler\UriCollection;
 use Fi1a\Crawler\UriParsers\HtmlUriParser;
@@ -121,6 +124,60 @@ class CrawlerTest extends TestCase
     }
 
     /**
+     * Загрузка с использованием прокси
+     */
+    public function testWithProxy(): void
+    {
+        $crawler = new Crawler(
+            $this->getConfig(),
+            new ItemStorage(new FilesystemAdapter($this->runtimeFolder)),
+            $this->getProxyStorageWithSavedProxy()
+        );
+        $crawler->setProxySelection(new SortedByTime(new OnlyActive()));
+        $crawler->setWriter(new FileWriter($this->runtimeFolder . '/web'));
+
+        $crawler->clearStorageData();
+        $crawler->run();
+        $this->assertCount(1, $crawler->getRestrictions());
+        $this->assertTrue($crawler->hasUriParser());
+        $this->assertEquals(9, $crawler->getItems()->count());
+        $this->assertEquals(5, $crawler->getItems()->getDownloaded()->count());
+        $this->assertEquals(9, $crawler->getItems()->getProcessed()->count());
+        $this->assertEquals(5, $crawler->getItems()->getWrited()->count());
+    }
+
+    /**
+     * Ошибка при использовании прокси
+     */
+    public function testProxyError(): void
+    {
+        $collection = new ProxyCollection();
+        $collection[] = [
+            'id' => null,
+            'type' => 'http',
+            'host' => HTTP_PROXY_HOST,
+            'port' => 100500,
+            'userName' => HTTP_PROXY_USERNAME,
+            'password' => HTTP_PROXY_PASSWORD,
+            'attempts' => 0,
+            'active' => true,
+            'lastUse' => null,
+        ];
+        $crawler = $this->getCrawler();
+
+        $crawler->setWriter(new FileWriter($this->runtimeFolder . '/web'));
+        $crawler->setProxyCollection($collection);
+        $crawler->clearStorageData();
+        $crawler->run();
+        $this->assertCount(1, $crawler->getRestrictions());
+        $this->assertTrue($crawler->hasUriParser());
+        $this->assertEquals(2, $crawler->getItems()->count());
+        $this->assertEquals(0, $crawler->getItems()->getDownloaded()->count());
+        $this->assertEquals(2, $crawler->getItems()->getProcessed()->count());
+        $this->assertEquals(0, $crawler->getItems()->getWrited()->count());
+    }
+
+    /**
      * Web Crawler
      */
     public function testDefaultVerboseDebug(): void
@@ -129,7 +186,12 @@ class CrawlerTest extends TestCase
         $config->setVerbose(ConfigInterface::VERBOSE_DEBUG);
         $output = new ConsoleOutput(new Formatter());
         $output->setStream(new Stream('php://memory'));
-        $crawler = new Crawler($config, new ItemStorage(new FilesystemAdapter($this->runtimeFolder)), $output);
+        $crawler = new Crawler(
+            $config,
+            new ItemStorage(new FilesystemAdapter($this->runtimeFolder)),
+            null,
+            $output
+        );
         $crawler->setWriter(new FileWriter($this->runtimeFolder . '/web'));
 
         $crawler->clearStorageData();

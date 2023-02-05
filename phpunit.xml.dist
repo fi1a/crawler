@@ -32,5 +32,13 @@
     <php>
         <const name="WEB_SERVER_HOST" value="127.0.0.1" />
         <const name="WEB_SERVER_HTTPS_PORT" value="3000" />
+        <const name="HTTP_PROXY_HOST" value="127.0.0.1" />
+        <const name="HTTP_PROXY_PORT" value="50100" />
+        <const name="HTTP_PROXY_USERNAME" value="username" />
+        <const name="HTTP_PROXY_PASSWORD" value="password" />
+        <const name="SOCKS5_PROXY_HOST" value="127.0.0.1" />
+        <const name="SOCKS5_PROXY_PORT" value="50101" />
+        <const name="SOCKS5_PROXY_USERNAME" value="username" />
+        <const name="SOCKS5_PROXY_PASSWORD" value="password" />
     </php>
 </phpunit>

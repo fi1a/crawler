@@ -18,7 +18,7 @@ use Fi1a\Filesystem\FolderInterface;
 use const JSON_UNESCAPED_UNICODE;
 
 /**
- * Хранение элементов
+ * Хранение элементов в файловой системе
  */
 class FilesystemAdapter implements StorageAdapterInterface
 {

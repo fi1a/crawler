@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Fi1a\Crawler;
 
 use Fi1a\Crawler\PrepareItem\PrepareItemInterface;
+use Fi1a\Crawler\Proxy\ProxyCollectionInterface;
+use Fi1a\Crawler\Proxy\ProxyStorageInterface;
+use Fi1a\Crawler\Proxy\Selections\ProxySelectionInterface;
 use Fi1a\Crawler\Restrictions\RestrictionCollectionInterface;
 use Fi1a\Crawler\Restrictions\RestrictionInterface;
 use Fi1a\Crawler\UriParsers\UriParserInterface;
@@ -132,6 +135,27 @@ interface CrawlerInterface
      * @return $this
      */
     public function clearStorageData();
+
+    /**
+     * Установить хранилище прокси
+     *
+     * @return $this
+     */
+    public function setProxyStorage(?ProxyStorageInterface $proxyStorage);
+
+    /**
+     * Объект подбора подходящих прокси
+     *
+     * @return $this
+     */
+    public function setProxySelection(?ProxySelectionInterface $proxySelection);
+
+    /**
+     * Установить коллекцию прокси
+     *
+     * @return $this
+     */
+    public function setProxyCollection(?ProxyCollectionInterface $collection);
 
     /**
      * Добавить uri в обработку
