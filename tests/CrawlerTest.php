@@ -109,6 +109,29 @@ class CrawlerTest extends TestCase
     }
 
     /**
+     * Пауза между запросами
+     */
+    public function testWithDelay(): void
+    {
+        $config = $this->getConfig();
+        $config->setDelay(1);
+
+        $crawler = new Crawler($config, new ItemStorage(new LocalFilesystemAdapter($this->runtimeFolder)));
+        $crawler->setWriter(new FileWriter($this->runtimeFolder . '/web'));
+
+        $crawler->clearStorageData();
+        $startTime = time();
+        $crawler->run();
+        $this->assertTrue(time() - $startTime >= $crawler->getItems()->getDownloaded()->count());
+        $this->assertCount(1, $crawler->getRestrictions());
+        $this->assertTrue($crawler->hasUriParser());
+        $this->assertEquals(9, $crawler->getItems()->count());
+        $this->assertEquals(5, $crawler->getItems()->getDownloaded()->count());
+        $this->assertEquals(9, $crawler->getItems()->getProcessed()->count());
+        $this->assertEquals(5, $crawler->getItems()->getWrited()->count());
+    }
+
+    /**
      * Загрузка с использованием прокси
      */
     public function testWithProxy(): void

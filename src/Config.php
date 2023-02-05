@@ -19,7 +19,7 @@ class Config extends ValueObject implements ConfigInterface
 {
     protected $modelKeys = [
         'startUri', 'httpClientConfig', 'httpClientHandler', 'verbose', 'logChannel', 'saveAfterQuantity',
-        'lifeTime',
+        'lifeTime', 'delay',
     ];
 
     /**
@@ -35,6 +35,7 @@ class Config extends ValueObject implements ConfigInterface
             'logChannel' => 'crawler',
             'saveAfterQuantity' => 10,
             'lifeTime' => 24 * 60 * 60,
+            'delay' => [0, 0],
         ];
     }
 
@@ -188,5 +189,37 @@ class Config extends ValueObject implements ConfigInterface
     public function getLifetime(): int
     {
         return (int) $this->modelGet('lifeTime');
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setDelay($delay)
+    {
+        if (is_numeric($delay)) {
+            $delay = [(int) $delay, (int) $delay];
+        }
+        if (!is_array($delay) || count($delay) !== 2 || $delay[0] > $delay[1]) {
+            throw new InvalidArgumentException(
+                'Ошибка в формате паузы между запросами. '
+                . 'Должно быть целое число или массив с двумя целыми числами '
+                . 'представляющими собой минимальное и максимальное значение'
+            );
+        }
+
+        $this->modelSet('delay', $delay);
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getDelay(): array
+    {
+        /** @var array<array-key, int> $delay */
+        $delay = (array) $this->modelGet('delay');
+
+        return $delay;
     }
 }
