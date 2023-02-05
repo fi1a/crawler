@@ -35,7 +35,12 @@ class FileWriter implements WriterInterface
      */
     protected $filesystem;
 
-    public function __construct(string $path, ?string $urlPrefix = null)
+    /**
+     * @var bool
+     */
+    protected $clear;
+
+    public function __construct(string $path, ?string $urlPrefix = null, bool $clearOnStart = true)
     {
         $this->urlPrefix = $urlPrefix;
         if (!$path) {
@@ -44,18 +49,8 @@ class FileWriter implements WriterInterface
         $adapter = new LocalAdapter($path);
         $this->filesystem = new Filesystem($adapter);
         $this->pathDir = $this->filesystem->factoryFolder('./');
-        if (!$this->pathDir->isExist()) {
-            if ($this->pathDir->make() === false) {
-                throw new ErrorException(
-                    sprintf('Не удалось создать директорию "%s"', $this->pathDir->getPath())
-                );
-            }
-        }
-        if (!$this->pathDir->canWrite()) {
-            throw new ErrorException(
-                sprintf('Нет прав на запись в директорию "%s"', $this->pathDir->getPath())
-            );
-        }
+        $this->createDir();
+        $this->clear = $clearOnStart;
     }
 
     /**
@@ -66,6 +61,10 @@ class FileWriter implements WriterInterface
         ConsoleOutputInterface $output,
         LoggerInterface $logger
     ): bool {
+        if ($this->clear) {
+            $this->clearDir();
+            $this->clear = false;
+        }
         $file = $this->filesystem->factoryFile($this->getFileName($item));
         $folder = $file->getParent();
         if ($folder && !$folder->isExist() && !$folder->make()) {
@@ -111,5 +110,35 @@ class FileWriter implements WriterInterface
         }
 
         return rtrim($this->pathDir->getPath(), '/') . '/' . ltrim($uri, '/');
+    }
+
+    /**
+     * Создать директории
+     */
+    protected function createDir(): void
+    {
+        if (!$this->pathDir->isExist()) {
+            if ($this->pathDir->make() === false) {
+                throw new ErrorException(
+                    sprintf('Не удалось создать директорию "%s"', $this->pathDir->getPath())
+                );
+            }
+        }
+        if (!$this->pathDir->canWrite()) {
+            throw new ErrorException(
+                sprintf('Нет прав на запись в директорию "%s"', $this->pathDir->getPath())
+            );
+        }
+    }
+
+    /**
+     * Очищает директорию
+     *
+     * @throws ErrorException
+     */
+    protected function clearDir(): void
+    {
+        $this->pathDir->delete();
+        $this->createDir();
     }
 }
