@@ -26,7 +26,7 @@ class HtmlUriParserTest extends TestCase
         $parser = new HtmlUriParser();
         $this->assertCount(
             5,
-            $parser->parse($item)
+            $parser->parse($item, $this->getOutput(), $this->getLogger())
         );
     }
 }

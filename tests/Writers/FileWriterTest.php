@@ -27,7 +27,9 @@ class FileWriterTest extends TestCase
             ->getMock();
 
         $writer->expects($this->once())->method('doWrite')->willReturn(100);
-        $this->assertTrue($writer->write($this->getItem()));
+        $this->assertTrue(
+            $writer->write($this->getItem(), $this->getOutput(), $this->getLogger())
+        );
     }
 
     /**
@@ -47,7 +49,9 @@ class FileWriterTest extends TestCase
             ->getMock();
 
         $writer->expects($this->once())->method('doWrite')->willReturn(100);
-        $this->assertTrue($writer->write($item));
+        $this->assertTrue(
+            $writer->write($item, $this->getOutput(), $this->getLogger())
+        );
     }
 
     /**
@@ -61,7 +65,9 @@ class FileWriterTest extends TestCase
             ->getMock();
 
         $writer->expects($this->once())->method('doWrite')->willReturn(false);
-        $this->assertFalse($writer->write($this->getItem()));
+        $this->assertFalse(
+            $writer->write($this->getItem(), $this->getOutput(), $this->getLogger())
+        );
     }
 
     /**
@@ -114,7 +120,9 @@ class FileWriterTest extends TestCase
         $this->expectException(ErrorException::class);
         $item = new Item(new Uri($this->getUrl('/index.html')), 0);
         $writer = new FileWriter($this->runtimeFolder . '/web');
-        $this->assertFalse($writer->write($item));
+        $this->assertFalse(
+            $writer->write($item, $this->getOutput(), $this->getLogger())
+        );
     }
 
     /**
@@ -128,7 +136,7 @@ class FileWriterTest extends TestCase
         $item->setNewItemUri(new Uri('/path/index.html'));
         try {
             chmod($this->runtimeFolder . '/web', 0000);
-            $writer->write($item);
+            $writer->write($item, $this->getOutput(), $this->getLogger());
         } catch (ErrorException $exception) {
             chmod($this->runtimeFolder . '/web', 0777);
 

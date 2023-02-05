@@ -77,7 +77,12 @@ class PrepareHtmlItemTest extends TestCase
 
         $this->assertEquals(
             file_get_contents(__DIR__ . '/../Fixtures/Server/equals/path/to/index.html'),
-            $prepare->prepare($preparePage, $itemCollection)
+            $prepare->prepare(
+                $preparePage,
+                $itemCollection,
+                $this->getOutput(),
+                $this->getLogger()
+            )
         );
     }
 }

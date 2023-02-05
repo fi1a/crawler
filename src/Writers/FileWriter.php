@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace Fi1a\Crawler\Writers;
 
 use ErrorException;
+use Fi1a\Console\IO\ConsoleOutputInterface;
 use Fi1a\Crawler\ItemInterface;
 use Fi1a\Filesystem\Adapters\LocalAdapter;
 use Fi1a\Filesystem\FileInterface;
 use Fi1a\Filesystem\Filesystem;
 use Fi1a\Filesystem\FilesystemInterface;
 use Fi1a\Filesystem\FolderInterface;
+use Fi1a\Log\LoggerInterface;
 use InvalidArgumentException;
 
 /**
@@ -59,8 +61,11 @@ class FileWriter implements WriterInterface
     /**
      * @inheritDoc
      */
-    public function write(ItemInterface $item): bool
-    {
+    public function write(
+        ItemInterface $item,
+        ConsoleOutputInterface $output,
+        LoggerInterface $logger
+    ): bool {
         $file = $this->filesystem->factoryFile($this->getFileName($item));
         $folder = $file->getParent();
         if ($folder && !$folder->isExist() && !$folder->make()) {
