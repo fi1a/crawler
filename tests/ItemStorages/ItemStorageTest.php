@@ -7,9 +7,9 @@ namespace Fi1a\Unit\Crawler\ItemStorages;
 use Fi1a\Crawler\Item;
 use Fi1a\Crawler\ItemCollection;
 use Fi1a\Crawler\ItemInterface;
-use Fi1a\Crawler\ItemStorages\FilesystemAdapter;
 use Fi1a\Crawler\ItemStorages\ItemStorage;
 use Fi1a\Crawler\ItemStorages\ItemStorageInterface;
+use Fi1a\Crawler\ItemStorages\StorageAdapters\LocalFilesystemAdapter;
 use Fi1a\Http\Uri;
 use Fi1a\Unit\Crawler\TestCases\TestCase;
 
@@ -23,7 +23,7 @@ class ItemStorageTest extends TestCase
      */
     protected function getStorage(): ItemStorageInterface
     {
-        return new ItemStorage(new FilesystemAdapter($this->runtimeFolder . '/storage'));
+        return new ItemStorage(new LocalFilesystemAdapter($this->runtimeFolder . '/storage'));
     }
 
     /**

@@ -6,20 +6,20 @@ namespace Fi1a\Unit\Crawler\Proxy\StorageAdapters;
 
 use ErrorException;
 use Fi1a\Crawler\Proxy\ProxyInterface;
-use Fi1a\Crawler\Proxy\StorageAdapters\FilesystemAdapter;
+use Fi1a\Crawler\Proxy\StorageAdapters\LocalFilesystemAdapter;
 use Fi1a\Unit\Crawler\TestCases\TestCase;
 
 /**
  * Адаптер хранилища в файловой системе
  */
-class FilesystemAdapterTest extends TestCase
+class LocalFilesystemAdapterTest extends TestCase
 {
     /**
      * Сохранение и загрузка прокси из хранилища
      */
     public function testSaveAndLoad(): void
     {
-        $adapter = new FilesystemAdapter($this->runtimeFolder);
+        $adapter = new LocalFilesystemAdapter($this->runtimeFolder);
 
         $collection = $this->getProxyCollection();
         $this->assertCount(10, $collection);
@@ -49,7 +49,7 @@ class FilesystemAdapterTest extends TestCase
         $this->deleteDir($this->runtimeFolder);
         mkdir($this->runtimeFolder, 0000, true);
         try {
-            new FilesystemAdapter($this->runtimeFolder . '/storage');
+            new LocalFilesystemAdapter($this->runtimeFolder . '/storage');
         } catch (ErrorException $exception) {
             chmod($this->runtimeFolder, 0777);
 
@@ -67,7 +67,7 @@ class FilesystemAdapterTest extends TestCase
         mkdir($this->runtimeFolder, 0777, true);
         mkdir($this->runtimeFolder . '/storage', 0000);
         try {
-            new FilesystemAdapter($this->runtimeFolder . '/storage');
+            new LocalFilesystemAdapter($this->runtimeFolder . '/storage');
         } catch (ErrorException $exception) {
             chmod($this->runtimeFolder . '/storage', 0777);
 

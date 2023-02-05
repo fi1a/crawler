@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Fi1a\Crawler\ItemStorages;
+namespace Fi1a\Crawler\ItemStorages\StorageAdapters;
 
 use Fi1a\Crawler\ItemCollectionInterface;
 use Fi1a\Crawler\ItemInterface;

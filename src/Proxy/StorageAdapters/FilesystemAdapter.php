@@ -9,17 +9,12 @@ use Fi1a\Crawler\Proxy\Proxy;
 use Fi1a\Crawler\Proxy\ProxyCollection;
 use Fi1a\Crawler\Proxy\ProxyCollectionInterface;
 use Fi1a\Crawler\Proxy\ProxyInterface;
-use Fi1a\Filesystem\Adapters\LocalAdapter as FilesystemLocalAdapter;
 use Fi1a\Filesystem\FileInterface;
-use Fi1a\Filesystem\Filesystem;
 use Fi1a\Filesystem\FilesystemInterface;
 use Fi1a\Filesystem\FolderInterface;
 
 use const JSON_UNESCAPED_UNICODE;
 
-/**
- * Адаптер хранилища в файловой системе
- */
 class FilesystemAdapter implements StorageAdapterInterface
 {
     /**
@@ -37,10 +32,9 @@ class FilesystemAdapter implements StorageAdapterInterface
      */
     protected $jsonFile;
 
-    public function __construct(string $path)
+    public function __construct(FilesystemInterface $filesystem)
     {
-        $adapter = new FilesystemLocalAdapter($path);
-        $this->filesystem = new Filesystem($adapter);
+        $this->filesystem = $filesystem;
 
         $this->pathDir = $this->filesystem->factoryFolder('.');
         $this->jsonFile = $this->filesystem->factoryFile('./proxy.json');

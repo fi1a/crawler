@@ -2,24 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Fi1a\Crawler\ItemStorages;
+namespace Fi1a\Crawler\ItemStorages\StorageAdapters;
 
 use ErrorException;
 use Fi1a\Crawler\Item;
 use Fi1a\Crawler\ItemCollection;
 use Fi1a\Crawler\ItemCollectionInterface;
 use Fi1a\Crawler\ItemInterface;
-use Fi1a\Filesystem\Adapters\LocalAdapter as FilesystemLocalAdapter;
 use Fi1a\Filesystem\FileInterface;
-use Fi1a\Filesystem\Filesystem;
 use Fi1a\Filesystem\FilesystemInterface;
 use Fi1a\Filesystem\FolderInterface;
 
 use const JSON_UNESCAPED_UNICODE;
 
-/**
- * Хранение элементов в файловой системе
- */
 class FilesystemAdapter implements StorageAdapterInterface
 {
     /**
@@ -42,10 +37,9 @@ class FilesystemAdapter implements StorageAdapterInterface
      */
     protected $filesystem;
 
-    public function __construct(string $path)
+    public function __construct(FilesystemInterface $filesystem)
     {
-        $adapter = new FilesystemLocalAdapter($path);
-        $this->filesystem = new Filesystem($adapter);
+        $this->filesystem = $filesystem;
 
         $this->pathDir = $this->filesystem->factoryFolder('.');
         $this->jsonFile = $this->filesystem->factoryFile('./items.json');

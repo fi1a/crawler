@@ -6,6 +6,7 @@ namespace Fi1a\Crawler\ItemStorages;
 
 use Fi1a\Crawler\ItemCollectionInterface;
 use Fi1a\Crawler\ItemInterface;
+use Fi1a\Crawler\ItemStorages\StorageAdapters\StorageAdapterInterface;
 
 class ItemStorage implements ItemStorageInterface
 {

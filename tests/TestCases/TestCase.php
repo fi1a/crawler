@@ -12,7 +12,7 @@ use Fi1a\Crawler\Proxy\ProxyCollectionInterface;
 use Fi1a\Crawler\Proxy\ProxyInterface;
 use Fi1a\Crawler\Proxy\ProxyStorage;
 use Fi1a\Crawler\Proxy\ProxyStorageInterface;
-use Fi1a\Crawler\Proxy\StorageAdapters\FilesystemAdapter;
+use Fi1a\Crawler\Proxy\StorageAdapters\LocalFilesystemAdapter;
 use Fi1a\Http\Uri;
 use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 use RecursiveDirectoryIterator;
@@ -119,7 +119,7 @@ class TestCase extends PHPUnitTestCase
      */
     protected function getProxyStorage(): ProxyStorageInterface
     {
-        return new ProxyStorage(new FilesystemAdapter($this->runtimeFolder));
+        return new ProxyStorage(new LocalFilesystemAdapter($this->runtimeFolder));
     }
 
     /**
