@@ -254,34 +254,70 @@ class DownloadOperation extends AbstractOperation
             }
         } while (true);
 
+        $sizeAllow = true;
+        $sizeLimit = false;
+        $sizeLimits = $this->config->getSizeLimits();
+        if (isset($sizeLimits[$this->getMime()])) {
+            $sizeLimit = $sizeLimits[$this->getMime()];
+        }
+        if (isset($sizeLimits[$this->getMime($response->getBody()->getContentType())])) {
+            $sizeLimit = $sizeLimits[$this->getMime($response->getBody()->getContentType())];
+        }
+        if ($sizeLimit !== false) {
+            $sizeAllow = $sizeLimit >= $response->getBody()->getSize();
+        }
+
         $item->setStatusCode($response->getStatusCode())
             ->setReasonPhrase($response->getReasonPhrase())
-            ->setDownloadStatus($response->isSuccess())
+            ->setDownloadStatus($response->isSuccess() && $sizeAllow)
             ->setContentType($response->getBody()->getContentType());
 
-        $body = $response->getBody()->getRaw();
-        $this->itemStorage->saveBody($item, $response->getBody()->getRaw());
+        if ($sizeAllow) {
+            $body = $response->getBody()->getRaw();
+            $this->itemStorage->saveBody($item, $response->getBody()->getRaw());
+            $item->setBody($body);
+        }
 
         $this->logger->log(
             $item->getDownloadStatus() ? LevelInterface::INFO : LevelInterface::WARNING,
-            'Item {{uri}}: statusCode={{statusCode}} contentType={{contentType}}',
+            'Item {{uri}}: statusCode={{statusCode}} contentType={{contentType}} size={{size}}',
             [
                 'uri' => $item->getItemUri()->maskedUri(),
                 'statusCode' => $item->getStatusCode(),
                 'contentType' => $item->getContentType(),
+                'size' => $response->getBody()->getSize(),
             ]
         );
-
-        $item->setBody($body);
+        $this->output->writeln(
+            '    StatusCode={{statusCode}}, ContentType={{contentType}}, Size={{size|memory}}',
+            [
+                'uri' => $item->getItemUri()->maskedUri(),
+                'statusCode' => $item->getStatusCode(),
+                'contentType' => $item->getContentType(),
+                'size' => $response->getBody()->getSize(),
+            ],
+            null,
+            OutputInterface::VERBOSE_HIGHTEST
+        );
 
         if ($item->getDownloadStatus()) {
             $this->uriParse($item);
-        } else {
+        } elseif ($sizeAllow) {
             $this->output->writeln(
                 '    <color=red>- Status={{statusCode}} ({{reasonPhrase}})</>',
                 [
                     'statusCode' => $item->getStatusCode(),
                     'reasonPhrase' => $item->getReasonPhrase(),
+                ],
+                null,
+                OutputInterface::VERBOSE_HIGHT
+            );
+        } else {
+            $this->output->writeln(
+                '    <color=red>- Размер {{size|memory}} превышает разрешенный в {{sizeLimit|memory}}</>',
+                [
+                    'size' => $response->getBody()->getSize(),
+                    'sizeLimit' => $sizeLimit,
                 ],
                 null,
                 OutputInterface::VERBOSE_HIGHT

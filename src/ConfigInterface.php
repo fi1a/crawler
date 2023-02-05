@@ -125,4 +125,18 @@ interface ConfigInterface extends ValueObjectInterface
      * @return array<array-key, int>
      */
     public function getDelay(): array;
+
+    /**
+     * Установить ограничение на загружаемый файл по типу контента
+     *
+     * @return $this
+     */
+    public function setSizeLimit(int $sizeLimit, ?string $mime = null);
+
+    /**
+     * Возвращает ограничения на загружаемые файлы по типу контента
+     *
+     * @return array<string, int>
+     */
+    public function getSizeLimits(): array;
 }

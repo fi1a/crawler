@@ -19,7 +19,7 @@ class Config extends ValueObject implements ConfigInterface
 {
     protected $modelKeys = [
         'startUri', 'httpClientConfig', 'httpClientHandler', 'verbose', 'logChannel', 'saveAfterQuantity',
-        'lifeTime', 'delay',
+        'lifeTime', 'delay', 'sizeLimits',
     ];
 
     /**
@@ -36,6 +36,7 @@ class Config extends ValueObject implements ConfigInterface
             'saveAfterQuantity' => 10,
             'lifeTime' => 24 * 60 * 60,
             'delay' => [0, 0],
+            'sizeLimits' => [],
         ];
     }
 
@@ -221,5 +222,31 @@ class Config extends ValueObject implements ConfigInterface
         $delay = (array) $this->modelGet('delay');
 
         return $delay;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setSizeLimit(int $sizeLimit, ?string $mime = null)
+    {
+        $sizeLimits = $this->getSizeLimits();
+        if (!$mime) {
+            $mime = '*';
+        }
+        $sizeLimits[$mime] = $sizeLimit;
+        $this->modelSet('sizeLimits', $sizeLimits);
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getSizeLimits(): array
+    {
+        /** @var array<string, int> $sizeLimits */
+        $sizeLimits = (array) $this->modelGet('sizeLimits');
+
+        return $sizeLimits;
     }
 }
