@@ -130,6 +130,19 @@ class ProcessOperation extends AbstractOperation
     }
 
     /**
+     * @inheritDoc
+     */
+    public function restart(): ItemCollectionInterface
+    {
+        foreach ($this->items as $item) {
+            assert($item instanceof ItemInterface);
+            $item->setProcessStatus(null);
+        }
+
+        return $this->items;
+    }
+
+    /**
      * Добавить преобразователь адресов из внешних во внутренние используемый по умолчанию
      */
     protected function addDefaultUriTransformer(): void

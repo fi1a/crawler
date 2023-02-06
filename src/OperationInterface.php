@@ -25,4 +25,9 @@ interface OperationInterface
      * Валидация состояния операции
      */
     public function validate(): void;
+
+    /**
+     * Перезапускает операцию для всех элементов
+     */
+    public function restart(): ItemCollectionInterface;
 }

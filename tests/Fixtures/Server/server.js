@@ -10,6 +10,11 @@ const options = {
     cert: fs.readFileSync(__dirname + '/ssl/cert.pem').toString(),
 };
 
+app.get('/502/', (req, res, next) => {
+    res.status(502).send('Bad Gateway');
+    next();
+});
+
 app.use(express.static(__dirname + '/public', {maxAge: oneYear}));
 
 https.createServer(options, app).listen(httpsPort, () => {
