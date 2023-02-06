@@ -196,4 +196,27 @@ class ConfigTest extends TestCase
         $config->setSizeLimit(2, Mime::HTML);
         $this->assertEquals(['*' => 1, Mime::HTML => 2], $config->getSizeLimits());
     }
+
+    /**
+     * Кол-во попыток запросов к адресу при http ошибки
+     */
+    public function testRetry(): void
+    {
+        $config = new Config();
+        $this->assertEquals(3, $config->getRetry());
+        $config->setRetry(10);
+        $this->assertEquals(10, $config->getRetry());
+        $config->setRetry(0);
+        $this->assertEquals(0, $config->getRetry());
+    }
+
+    /**
+     * Кол-во попыток запросов к адресу при http ошибки (исключение при отрицательном значении)
+     */
+    public function testRetryException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $config = new Config();
+        $config->setRetry(-1);
+    }
 }

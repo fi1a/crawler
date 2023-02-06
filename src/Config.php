@@ -19,7 +19,7 @@ class Config extends ValueObject implements ConfigInterface
 {
     protected $modelKeys = [
         'startUri', 'httpClientConfig', 'httpClientHandler', 'verbose', 'logChannel', 'saveAfterQuantity',
-        'lifeTime', 'delay', 'sizeLimits',
+        'lifeTime', 'delay', 'sizeLimits', 'retry',
     ];
 
     /**
@@ -37,6 +37,7 @@ class Config extends ValueObject implements ConfigInterface
             'lifeTime' => 24 * 60 * 60,
             'delay' => [0, 0],
             'sizeLimits' => [],
+            'retry' => 3,
         ];
     }
 
@@ -248,5 +249,27 @@ class Config extends ValueObject implements ConfigInterface
         $sizeLimits = (array) $this->modelGet('sizeLimits');
 
         return $sizeLimits;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setRetry(int $retry)
+    {
+        if ($retry < 0) {
+            throw new \InvalidArgumentException('Кол-во попыток должно быть больше или равно 0');
+        }
+
+        $this->modelSet('retry', $retry);
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getRetry(): int
+    {
+        return (int) $this->modelGet('retry');
     }
 }

@@ -24,6 +24,7 @@ use Fi1a\Http\UriInterface;
 use Fi1a\HttpClient\Handlers\Exceptions\ConnectionErrorException;
 use Fi1a\HttpClient\HttpClient;
 use Fi1a\HttpClient\HttpClientInterface;
+use Fi1a\HttpClient\Middlewares\RetryMiddleware;
 use Fi1a\HttpClient\Request;
 use Fi1a\HttpClient\Response;
 use Fi1a\Log\LevelInterface;
@@ -224,6 +225,11 @@ class DownloadOperation extends AbstractOperation
 
             if ($proxy) {
                 $request->withProxy($proxy);
+            }
+
+            $retry = $this->config->getRetry();
+            if ($retry) {
+                $request->withMiddleware(new RetryMiddleware($retry));
             }
 
             try {
