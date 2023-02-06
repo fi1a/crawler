@@ -139,4 +139,16 @@ interface ConfigInterface extends ValueObjectInterface
      * @return array<string, int>
      */
     public function getSizeLimits(): array;
+
+    /**
+     * Установить кол-во попыток запросов к адресу при http ошибки
+     *
+     * @return $this
+     */
+    public function setRetry(int $retry);
+
+    /**
+     * Вернуть кол-во попыток запросов к адресу при http ошибки
+     */
+    public function getRetry(): int;
 }
