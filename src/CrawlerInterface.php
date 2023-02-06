@@ -193,4 +193,11 @@ interface CrawlerInterface
      * @return $this
      */
     public function restartErrors();
+
+    /**
+     * Фабрика для создания объекта запроса
+     *
+     * @return $this
+     */
+    public function setRequestFactory(callable $factory);
 }

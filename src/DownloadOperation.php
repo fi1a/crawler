@@ -26,6 +26,7 @@ use Fi1a\HttpClient\HttpClient;
 use Fi1a\HttpClient\HttpClientInterface;
 use Fi1a\HttpClient\Middlewares\RetryMiddleware;
 use Fi1a\HttpClient\Request;
+use Fi1a\HttpClient\RequestInterface;
 use Fi1a\HttpClient\Response;
 use Fi1a\Log\LevelInterface;
 use Fi1a\Log\LoggerInterface;
@@ -66,6 +67,11 @@ class DownloadOperation extends AbstractOperation
      */
     protected $httpClient;
 
+    /**
+     * @var callable
+     */
+    protected $requestFactory;
+
     public function __construct(
         ConfigInterface $config,
         ConsoleOutputInterface $output,
@@ -82,6 +88,10 @@ class DownloadOperation extends AbstractOperation
         );
         $this->restrictions = new RestrictionCollection();
         $this->setProxyStorage($proxyStorage);
+        /** @psalm-suppress UnusedClosureParam */
+        $this->requestFactory = function (ItemInterface $item): RequestInterface {
+            return Request::create();
+        };
     }
 
     /**
@@ -219,7 +229,8 @@ class DownloadOperation extends AbstractOperation
                 break;
             }
 
-            $request = Request::create();
+            /** @var RequestInterface $request */
+            $request = call_user_func($this->requestFactory, $item);
             $request->withMethod(Http::GET)
                 ->withUri($item->getItemUri());
 
@@ -476,6 +487,18 @@ class DownloadOperation extends AbstractOperation
         }
 
         return $this->items;
+    }
+
+    /**
+     * Фабрика для создания объекта запроса
+     *
+     * @return $this
+     */
+    public function setRequestFactory(callable $factory)
+    {
+        $this->requestFactory = $factory;
+
+        return $this;
     }
 
     /**

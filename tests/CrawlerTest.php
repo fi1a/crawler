@@ -23,6 +23,9 @@ use Fi1a\Crawler\Writers\FileWriter;
 use Fi1a\Http\Mime;
 use Fi1a\Http\MimeInterface;
 use Fi1a\Http\Uri;
+use Fi1a\HttpClient\Middlewares\ApiKeyAuthMiddleware;
+use Fi1a\HttpClient\Request;
+use Fi1a\HttpClient\RequestInterface;
 use Fi1a\Unit\Crawler\TestCases\TestCase;
 use InvalidArgumentException;
 
@@ -107,6 +110,51 @@ class CrawlerTest extends TestCase
         $this->assertEquals(7, $crawler->getItems()->getDownloaded()->count());
         $this->assertEquals(12, $crawler->getItems()->getProcessed()->count());
         $this->assertEquals(7, $crawler->getItems()->getWrited()->count());
+    }
+
+    /**
+     * Тестирование фабрики запросов
+     */
+    public function testRequestFactory(): void
+    {
+        $config = new Config();
+
+        $config->addStartUri($this->getUrl('/api-key-auth/'));
+        $config->setVerbose(ConfigInterface::VERBOSE_NONE);
+
+        $config->getHttpClientConfig()->setSslVerify(false);
+
+        $crawler = new Crawler(
+            $config,
+            new ItemStorage(new LocalFilesystemAdapter($this->runtimeFolder))
+        );
+
+        $crawler->setWriter(new FileWriter($this->runtimeFolder . '/web'));
+
+        $crawler->clearStorageData();
+        $crawler->run();
+        $this->assertCount(1, $crawler->getRestrictions());
+        $this->assertTrue($crawler->hasUriParser());
+        $this->assertEquals(1, $crawler->getItems()->count());
+        $this->assertEquals(0, $crawler->getItems()->getDownloaded()->count());
+        $this->assertEquals(1, $crawler->getItems()->getProcessed()->count());
+        $this->assertEquals(0, $crawler->getItems()->getWrited()->count());
+
+        $crawler->restartDownload();
+        $crawler->setRequestFactory(function (ItemInterface $item): RequestInterface {
+            return Request::create()->withMiddleware(
+                new ApiKeyAuthMiddleware('token', '123', ApiKeyAuthMiddleware::IN_HEADER)
+            );
+        });
+
+        $crawler->clearStorageData();
+        $crawler->run();
+        $this->assertCount(1, $crawler->getRestrictions());
+        $this->assertTrue($crawler->hasUriParser());
+        $this->assertEquals(1, $crawler->getItems()->count());
+        $this->assertEquals(1, $crawler->getItems()->getDownloaded()->count());
+        $this->assertEquals(1, $crawler->getItems()->getProcessed()->count());
+        $this->assertEquals(1, $crawler->getItems()->getWrited()->count());
     }
 
     /**

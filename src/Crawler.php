@@ -370,6 +370,16 @@ class Crawler implements CrawlerInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function setRequestFactory(callable $factory)
+    {
+        $this->downloadOperation->setRequestFactory($factory);
+
+        return $this;
+    }
+
+    /**
      * Перезапуск операции
      *
      * @return $this
