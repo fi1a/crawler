@@ -573,14 +573,32 @@ class DownloadOperation extends AbstractOperation
     {
         $uri = $uri->withFragment('');
         if ($this->items->has($uri->uri())) {
+            /** @var ItemInterface $existingItem */
+            $existingItem = $this->items->get($uri->uri());
+            if ($existingItem->isAllow()) {
+                $this->output->writeln(
+                    '        <color=blue>= Уже добавлен</>',
+                    [],
+                    null,
+                    OutputInterface::VERBOSE_HIGHTEST
+                );
+                $this->logger->debug(
+                    'Uri {{uri}} уже добавлен',
+                    [
+                        'uri' => $uri->maskedUri(),
+                    ]
+                );
+
+                return false;
+            }
             $this->output->writeln(
-                '        <color=blue>= Уже в очереди</>',
+                '        <color=blue>= Запрещен обход для этого адреса</>',
                 [],
                 null,
                 OutputInterface::VERBOSE_HIGHTEST
             );
             $this->logger->debug(
-                'Uri {{uri}} уже добавлен',
+                'Uri {{uri}} запрещен обход для этого адреса',
                 [
                     'uri' => $uri->maskedUri(),
                 ]

@@ -108,26 +108,26 @@ abstract class AbstractOperation implements OperationInterface
         $this->output->setVerbose($this->config->getVerbose());
         $this->beforeOperate();
         $progressbarStyle = new ProgressbarStyle();
-        $progressbarStyle->setTemplateByName('full');
+        $progressbarStyle->setTemplate('    {{current}}/{{max}} [{{bar}}] {{percent|sprintf("3s")}}% '
+            . '{{elapsed|sprintf("10s")}} / {{remaining|sprintf("-10s")}}'
+            . ' {{memory|memory}}{{if(title)}} {{title}}{{endif}}');
         $progressbar = new ProgressbarComponent($this->output, $progressbarStyle);
 
         $progressbar->start($this->items->count());
         $progressbar->display();
+        $this->output->writeln();
         $index = 0;
 
         while ($item = $this->queue->pollBegin()) {
             assert($item instanceof ItemInterface);
             $index++;
 
-            if ($this->output->getVerbose() >= OutputInterface::VERBOSE_HIGHT) {
-                $progressbar->clear();
-            }
-
             $this->operateOnItem($item, $index);
 
             $progressbar->setMaxSteps($this->items->count());
             $progressbar->increment();
             $progressbar->display();
+            $this->output->writeln();
 
             if ($this->config->getSaveAfterQuantity() > 0 && $index % $this->config->getSaveAfterQuantity() === 0) {
                 $this->saveStorage($this->items);
