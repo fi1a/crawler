@@ -48,6 +48,12 @@ class HtmlUriParser implements UriParserInterface
                 $this->parseNode('script', 'src', $sq)->getArrayCopy()
             )
         );
+        $collection->exchangeArray(
+            array_merge(
+                $collection->getArrayCopy(),
+                $this->parseNode('iframe', 'src', $sq)->getArrayCopy()
+            )
+        );
 
         return $collection;
     }

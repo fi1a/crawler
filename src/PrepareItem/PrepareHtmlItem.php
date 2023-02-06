@@ -32,6 +32,7 @@ class PrepareHtmlItem implements PrepareItemInterface
         $this->replace('img', 'src', $sq, $item, $items);
         $this->replace('link[rel="stylesheet"]', 'href', $sq, $item, $items);
         $this->replace('script', 'src', $sq, $item, $items);
+        $this->replace('iframe', 'src', $sq, $item, $items);
 
         return (string) $sq;
     }
