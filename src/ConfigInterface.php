@@ -129,9 +129,11 @@ interface ConfigInterface extends ValueObjectInterface
     /**
      * Установить ограничение на загружаемый файл по типу контента
      *
+     * @param int|string $sizeLimit
+     *
      * @return $this
      */
-    public function setSizeLimit(int $sizeLimit, ?string $mime = null);
+    public function setSizeLimit($sizeLimit, ?string $mime = null);
 
     /**
      * Возвращает ограничения на загружаемые файлы по типу контента
