@@ -15,6 +15,23 @@ app.get('/502/', (req, res, next) => {
     next();
 });
 
+app.get('/api-key-auth/', (req, res, next) => {
+    let token = req.header('token');
+    if (req.query.token) {
+        token = req.query.token;
+    }
+
+    if (token === '123') {
+        res.status(200).send('Access granted');
+        next();
+
+        return;
+    }
+
+    res.status(401).send('Access denied');
+    next();
+});
+
 app.use(express.static(__dirname + '/public', {maxAge: oneYear}));
 
 https.createServer(options, app).listen(httpsPort, () => {
