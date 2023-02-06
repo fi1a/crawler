@@ -141,7 +141,7 @@ class DownloadOperation extends AbstractOperation
 
         if (!$item->isAllow()) {
             $this->output->writeln(
-                '{{index}}/{{count}} <color=yellow>Пропуск загрузки uri {{uri|unescape}}</>',
+                '{{index}}/{{count}} <color=blue>Пропуск загрузки uri {{uri|unescape}}</>',
                 [
                     'index' => $index,
                     'count' => $this->items->count(),
