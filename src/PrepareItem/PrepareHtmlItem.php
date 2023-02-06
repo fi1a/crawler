@@ -75,6 +75,8 @@ class PrepareHtmlItem implements PrepareItemInterface
         }
 
         $absoluteUri = $item->getAbsoluteUri($uri);
+        $fragment = $absoluteUri->fragment();
+        $absoluteUri = $absoluteUri->withFragment('');
 
         if (!$items->has($absoluteUri->uri())) {
             return false;
@@ -82,7 +84,8 @@ class PrepareHtmlItem implements PrepareItemInterface
 
         /** @var ItemInterface $newItem */
         $newItem = $items->get($absoluteUri->uri());
+        $newItemUri = $newItem->getNewItemUri();
 
-        return $newItem->getNewItemUri();
+        return $newItemUri ? $newItemUri->withFragment($fragment) : null;
     }
 }

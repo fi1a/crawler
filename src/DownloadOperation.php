@@ -542,6 +542,7 @@ class DownloadOperation extends AbstractOperation
      */
     protected function addItemByUri(UriInterface $uri): bool
     {
+        $uri = $uri->withFragment('');
         if ($this->items->has($uri->uri())) {
             $this->output->writeln(
                 '        <color=blue>= Уже в очереди</>',
