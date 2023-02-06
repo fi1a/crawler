@@ -25,7 +25,7 @@ class ProcessOperation extends AbstractOperation
     {
         if ($item->getProcessStatus() !== null) {
             $this->output->writeln(
-                '{{index}}/{{count}} <color=green>Uri {{uri|unescape}} уже преобразован</>',
+                '{{index}}/{{count}} <color=blue>Uri {{uri|unescape}} уже преобразован</>',
                 [
                     'index' => $index,
                     'count' => $this->items->count(),
@@ -57,7 +57,7 @@ class ProcessOperation extends AbstractOperation
 
         if ($newItemUri->uri() === $item->getItemUri()->uri()) {
             $this->output->writeln(
-                '    Без преобразования',
+                '    <color=blue>- Без преобразования</>',
                 [],
                 null,
                 OutputInterface::VERBOSE_HIGHTEST
@@ -73,7 +73,7 @@ class ProcessOperation extends AbstractOperation
         }
 
         $this->output->writeln(
-            '    Преобразован в {{|unescape}}',
+            '    <color=yellow>+ Преобразован в {{|unescape}}</>',
             [$newItemUri->maskedUri()],
             null,
             OutputInterface::VERBOSE_HIGHTEST
