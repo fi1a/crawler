@@ -198,6 +198,47 @@ class ConfigTest extends TestCase
     }
 
     /**
+     * Ограничение на загружаемый файл по типу контента
+     */
+    public function testSizeLimitAsText(): void
+    {
+        $config = new Config();
+        $this->assertEquals([], $config->getSizeLimits());
+        $config->setSizeLimit('1B');
+        $this->assertEquals(['*' => 1,], $config->getSizeLimits());
+        $config->setSizeLimit('1KB');
+        $this->assertEquals(['*' => 1024,], $config->getSizeLimits());
+        $config->setSizeLimit('1K');
+        $this->assertEquals(['*' => 1024,], $config->getSizeLimits());
+        $config->setSizeLimit('1MB');
+        $this->assertEquals(['*' => pow(1024, 2),], $config->getSizeLimits());
+        $config->setSizeLimit('1M');
+        $this->assertEquals(['*' => pow(1024, 2),], $config->getSizeLimits());
+        $config->setSizeLimit('1GB');
+        $this->assertEquals(['*' => pow(1024, 3),], $config->getSizeLimits());
+        $config->setSizeLimit('1G');
+        $this->assertEquals(['*' => pow(1024, 3),], $config->getSizeLimits());
+        $config->setSizeLimit('1TB');
+        $this->assertEquals(['*' => pow(1024, 4),], $config->getSizeLimits());
+        $config->setSizeLimit('1T');
+        $this->assertEquals(['*' => pow(1024, 4),], $config->getSizeLimits());
+        $config->setSizeLimit('1PB');
+        $this->assertEquals(['*' => pow(1024, 5),], $config->getSizeLimits());
+        $config->setSizeLimit('1P');
+        $this->assertEquals(['*' => pow(1024, 5),], $config->getSizeLimits());
+    }
+
+    /**
+     * Ограничение на загружаемый файл по типу контента
+     */
+    public function testSizeLimitAsTextException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $config = new Config();
+        $config->setSizeLimit('1U');
+    }
+
+    /**
      * Кол-во попыток запросов к адресу при http ошибки
      */
     public function testRetry(): void

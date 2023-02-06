@@ -228,13 +228,13 @@ class Config extends ValueObject implements ConfigInterface
     /**
      * @inheritDoc
      */
-    public function setSizeLimit(int $sizeLimit, ?string $mime = null)
+    public function setSizeLimit($sizeLimit, ?string $mime = null)
     {
         $sizeLimits = $this->getSizeLimits();
         if (!$mime) {
             $mime = '*';
         }
-        $sizeLimits[$mime] = $sizeLimit;
+        $sizeLimits[$mime] = $this->getBytesSize($sizeLimit);
         $this->modelSet('sizeLimits', $sizeLimits);
 
         return $this;
@@ -271,5 +271,44 @@ class Config extends ValueObject implements ConfigInterface
     public function getRetry(): int
     {
         return (int) $this->modelGet('retry');
+    }
+
+    /**
+     * Размер в байтах
+     *
+     * @param string|int $size
+     */
+    protected function getBytesSize($size): float
+    {
+        if (is_numeric($size)) {
+            return (float) $size;
+        }
+
+        if (!preg_match('/^(?<number>((\d+)?\.)?\d+)(?<format>(B|K|M|G|T|P)B?)?$/i', $size, $match)) {
+            throw new InvalidArgumentException('Размер имеет неизвестный формат');
+        }
+
+        $number = (float) $match['number'];
+        $format = $match['format'] ?? '';
+
+        switch (strtoupper($format)) {
+            case 'KB':
+            case 'K':
+                return $number * 1024;
+            case 'MB':
+            case 'M':
+                return $number * pow(1024, 2);
+            case 'GB':
+            case 'G':
+                return $number * pow(1024, 3);
+            case 'TB':
+            case 'T':
+                return $number * pow(1024, 4);
+            case 'PB':
+            case 'P':
+                return $number * pow(1024, 5);
+        }
+
+        return $number;
     }
 }
