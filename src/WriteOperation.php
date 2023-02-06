@@ -56,7 +56,7 @@ class WriteOperation extends AbstractOperation
     {
         if (!$item->isAllow()) {
             $this->output->writeln(
-                '{{index}}/{{count}} <color=yellow>Пропуск записи uri {{uri|unescape}}</>',
+                '{{index}}/{{count}} <color=blue>Пропуск записи uri {{uri|unescape}}</>',
                 [
                     'index' => $index,
                     'count' => $this->items->count(),
@@ -71,7 +71,7 @@ class WriteOperation extends AbstractOperation
 
         if ($item->getWriteStatus() !== null) {
             $this->output->writeln(
-                '{{index}}/{{count}} <color=green>Uri {{uri|unescape}} уже записан</>',
+                '{{index}}/{{count}} <color=green>= Uri {{uri|unescape}} уже записан</>',
                 [
                     'index' => $index,
                     'count' => $this->items->count(),
@@ -129,7 +129,7 @@ class WriteOperation extends AbstractOperation
                     $item->setWriteStatus(true);
 
                     $this->output->writeln(
-                        '    Записан',
+                        '    <color=yellow>+ Записан</>',
                         [],
                         null,
                         OutputInterface::VERBOSE_HIGHTEST
