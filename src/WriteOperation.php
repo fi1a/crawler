@@ -179,7 +179,7 @@ class WriteOperation extends AbstractOperation
         }
 
         $this->output->writeln(
-            '    <color=red>- Status={{statusCode}} ({{reasonPhrase}})</>',
+            '    <color=red>- Отклонен на стадии загрузки.</> Status={{statusCode}} ({{reasonPhrase}})',
             [
                 'statusCode' => $item->getStatusCode(),
                 'reasonPhrase' => $item->getReasonPhrase(),
@@ -188,7 +188,7 @@ class WriteOperation extends AbstractOperation
             OutputInterface::VERBOSE_HIGHT
         );
         $this->logger->warning(
-            '{{uri}} не записан Status={{statusCode}} ({{reasonPhrase}})',
+            '{{uri}} отклонен на стадии загрузки. Status={{statusCode}} ({{reasonPhrase}})',
             [
                 'uri' => $item->getItemUri()->maskedUri(),
                 'statusCode' => $item->getStatusCode(),
@@ -222,7 +222,7 @@ class WriteOperation extends AbstractOperation
      */
     protected function afterOperate(): void
     {
-        $this->logger->info('Запись завершено');
+        $this->logger->info('Запись завершена');
     }
 
     /**
@@ -295,6 +295,19 @@ class WriteOperation extends AbstractOperation
         unset($this->writers[$this->getMime($mime)]);
 
         return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function restart(): ItemCollectionInterface
+    {
+        foreach ($this->items as $item) {
+            assert($item instanceof ItemInterface);
+            $item->setWriteStatus(null);
+        }
+
+        return $this->items;
     }
 
     /**

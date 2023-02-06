@@ -320,6 +320,71 @@ class Crawler implements CrawlerInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function restartDownload()
+    {
+        $this->restartWrite();
+        $this->restartProcess();
+
+        return $this->restart($this->downloadOperation);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function restartProcess()
+    {
+        $this->restartWrite();
+
+        return $this->restart($this->processOperation);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function restartWrite()
+    {
+        return $this->restart($this->writeOperation);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function restartErrors()
+    {
+        $this->initFromStorage();
+        foreach ($this->items as $item) {
+            assert($item instanceof ItemInterface);
+            if ($item->getDownloadStatus() !== false || !$item->isAllow()) {
+                continue;
+            }
+
+            $item->setDownloadStatus(null);
+            $item->setProcessStatus(null);
+            $item->setWriteStatus(null);
+        }
+        $this->itemStorage->save($this->items);
+
+        return $this;
+    }
+
+    /**
+     * Перезапуск операции
+     *
+     * @return $this
+     */
+    protected function restart(OperationInterface $operation)
+    {
+        $this->initFromStorage();
+        $operation->setItems($this->items);
+        $this->items = $operation->restart();
+        $this->itemStorage->save($this->items);
+
+        return $this;
+    }
+
+    /**
      * Выполняет действие
      *
      * @return $this

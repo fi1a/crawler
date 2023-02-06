@@ -165,4 +165,32 @@ interface CrawlerInterface
      * @return $this
      */
     public function addUri($uri);
+
+    /**
+     * Перезапустить процесс скачивания для всех элементов
+     *
+     * @return $this
+     */
+    public function restartDownload();
+
+    /**
+     * Перезапустить процесс обработки скачанных данных для всех элементов
+     *
+     * @return $this
+     */
+    public function restartProcess();
+
+    /**
+     * Перезапустить процесс записи для всех элементов
+     *
+     * @return $this
+     */
+    public function restartWrite();
+
+    /**
+     * Перезапуск элементов помеченных как выполненных с ошибкой
+     *
+     * @return $this
+     */
+    public function restartErrors();
 }

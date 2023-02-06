@@ -33,7 +33,7 @@ class PrepareHtmlItem implements PrepareItemInterface
         $this->replace('link[rel="stylesheet"]', 'href', $sq, $item, $items);
         $this->replace('script', 'src', $sq, $item, $items);
 
-        return html_entity_decode((string) $sq);
+        return (string) $sq;
     }
 
     /**

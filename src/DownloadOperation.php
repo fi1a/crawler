@@ -288,19 +288,21 @@ class DownloadOperation extends AbstractOperation
                 'size' => $response->getBody()->getSize(),
             ]
         );
-        $this->output->writeln(
-            '    StatusCode={{statusCode}}, ContentType={{contentType}}, Size={{size|memory}}',
-            [
-                'uri' => $item->getItemUri()->maskedUri(),
-                'statusCode' => $item->getStatusCode(),
-                'contentType' => $item->getContentType(),
-                'size' => $response->getBody()->getSize(),
-            ],
-            null,
-            OutputInterface::VERBOSE_HIGHTEST
-        );
 
         if ($item->getDownloadStatus()) {
+            $this->output->writeln(
+                '    StatusCode=<color=green>{{statusCode}}</>, '
+                . 'ContentType=<color=green>{{contentType}}</>, Size=<color=green>{{size|memory}}</>',
+                [
+                    'uri' => $item->getItemUri()->maskedUri(),
+                    'statusCode' => $item->getStatusCode(),
+                    'contentType' => $item->getContentType(),
+                    'size' => $response->getBody()->getSize(),
+                ],
+                null,
+                OutputInterface::VERBOSE_HIGHTEST
+            );
+
             $this->uriParse($item);
         } elseif ($sizeAllow) {
             $this->output->writeln(
@@ -460,6 +462,19 @@ class DownloadOperation extends AbstractOperation
     /**
      * @inheritDoc
      */
+    public function restart(): ItemCollectionInterface
+    {
+        foreach ($this->items as $item) {
+            assert($item instanceof ItemInterface);
+            $item->setDownloadStatus(null);
+        }
+
+        return $this->items;
+    }
+
+    /**
+     * @inheritDoc
+     */
     protected function getResultCollection(): ItemCollectionInterface
     {
         return $this->items->getDownloaded();
@@ -528,6 +543,12 @@ class DownloadOperation extends AbstractOperation
     protected function addItemByUri(UriInterface $uri): bool
     {
         if ($this->items->has($uri->uri())) {
+            $this->output->writeln(
+                '        <color=blue>= Уже в очереди</>',
+                [],
+                null,
+                OutputInterface::VERBOSE_HIGHTEST
+            );
             $this->logger->debug(
                 'Uri {{uri}} уже добавлен',
                 [
