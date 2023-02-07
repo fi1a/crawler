@@ -9,7 +9,7 @@ use Fi1a\Http\UriInterface;
 use InvalidArgumentException;
 
 /**
- * Ограничение по домену
+ * Ограничение по домену и пути
  */
 class UriRestriction implements RestrictionInterface
 {
@@ -37,13 +37,18 @@ class UriRestriction implements RestrictionInterface
      */
     public function isAllow(UriInterface $uri): bool
     {
-        if (!$uri->host() && $this->allow->path() === '/') {
+        $allowPath = $this->allow->path();
+        if (!$allowPath) {
+            $allowPath = '/';
+        }
+
+        if (!$uri->host() && $allowPath === '/') {
             return true;
         }
         if ($uri->host() && $this->allow->host() !== $uri->host()) {
             return false;
         }
 
-        return mb_stripos($uri->path(), $this->allow->path()) === 0;
+        return mb_stripos($uri->path(), $allowPath) === 0;
     }
 }

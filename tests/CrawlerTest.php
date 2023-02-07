@@ -391,10 +391,10 @@ class CrawlerTest extends TestCase
         $crawler->run();
         $this->assertCount(1, $crawler->getRestrictions());
         $this->assertTrue($crawler->hasUriParser());
-        $this->assertEquals(25, $crawler->getItems()->count());
-        $this->assertEquals(17, $crawler->getItems()->getDownloaded()->count());
-        $this->assertEquals(25, $crawler->getItems()->getProcessed()->count());
-        $this->assertEquals(17, $crawler->getItems()->getWrited()->count());
+        $this->assertEquals(26, $crawler->getItems()->count());
+        $this->assertEquals(18, $crawler->getItems()->getDownloaded()->count());
+        $this->assertEquals(26, $crawler->getItems()->getProcessed()->count());
+        $this->assertEquals(18, $crawler->getItems()->getWrited()->count());
 
         $config->setLifetime(0);
         $crawler2 = new Crawler($config, new ItemStorage(new LocalFilesystemAdapter($this->runtimeFolder)));
@@ -404,10 +404,10 @@ class CrawlerTest extends TestCase
         $crawler2->run();
         $this->assertCount(1, $crawler2->getRestrictions());
         $this->assertTrue($crawler2->hasUriParser());
-        $this->assertEquals(25, $crawler2->getItems()->count());
-        $this->assertEquals(17, $crawler2->getItems()->getDownloaded()->count());
-        $this->assertEquals(25, $crawler2->getItems()->getProcessed()->count());
-        $this->assertEquals(17, $crawler2->getItems()->getWrited()->count());
+        $this->assertEquals(26, $crawler2->getItems()->count());
+        $this->assertEquals(18, $crawler2->getItems()->getDownloaded()->count());
+        $this->assertEquals(26, $crawler2->getItems()->getProcessed()->count());
+        $this->assertEquals(18, $crawler2->getItems()->getWrited()->count());
     }
 
     /**
