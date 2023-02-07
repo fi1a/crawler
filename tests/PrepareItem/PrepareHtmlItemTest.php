@@ -29,6 +29,14 @@ class PrepareHtmlItemTest extends TestCase
 
         $itemCollection = new ItemCollection();
 
+        $item = new Item(new Uri($this->getUrl('/path/to/index.html?foo=bar')));
+        $item->setNewItemUri(new Uri('/path/to/index.html?foo=bar'));
+        $itemCollection[$item->getItemUri()->uri()] = $item;
+
+        $item = new Item(new Uri($this->getUrl('/path/to/index.html')));
+        $item->setNewItemUri(new Uri('/path/to/index.html'));
+        $itemCollection[$item->getItemUri()->uri()] = $item;
+
         $item = new Item(new Uri($this->getUrl('/path/to/link1.html')));
         $item->setNewItemUri(new Uri('/path/to/link1.html'));
         $itemCollection[$item->getItemUri()->uri()] = $item;

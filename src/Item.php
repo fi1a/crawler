@@ -10,7 +10,7 @@ use Fi1a\Http\UriInterface;
 use InvalidArgumentException;
 
 /**
- * Элемент
+ * Элемент обхода
  */
 class Item implements ItemInterface
 {
@@ -335,12 +335,7 @@ class Item implements ItemInterface
      */
     public function getAbsoluteUri(UriInterface $uri): UriInterface
     {
-        if (!$uri->host()) {
-            $uri = $uri->withScheme($this->getItemUri()->scheme())
-                ->withHost($this->getItemUri()->host())
-                ->withPort($this->getItemUri()->port());
-        }
-        if (mb_substr($uri->path(), 0, 1) !== '/') {
+        if ($uri->isRelative()) {
             $tokens = [];
             $parts = explode('/', $this->getItemUri()->normalizedBasePath() . $uri->path());
             foreach ($parts as $part) {
@@ -358,7 +353,23 @@ class Item implements ItemInterface
                 $tokens[] = $part;
             }
 
-            $uri = $uri->withPath('/' . implode('/', $tokens));
+            $absoluteUri = '/' . implode('/', $tokens);
+            $basename = basename($absoluteUri);
+            if ($basename && !preg_match('/^(.+)\.(.+)$/i', $basename)) {
+                $absoluteUri = rtrim($absoluteUri, '/') . '/';
+            }
+            if (mb_substr($absoluteUri, -1) === '/') {
+                $basename = basename($this->getItemUri()->path());
+                if ($basename && preg_match('/^(.+)\.(.+)$/i', $basename)) {
+                    $absoluteUri .= $basename;
+                }
+            }
+            $uri = $uri->withPath($absoluteUri);
+        }
+        if (!$uri->host()) {
+            $uri = $uri->withScheme($this->getItemUri()->scheme())
+                ->withHost($this->getItemUri()->host())
+                ->withPort($this->getItemUri()->port());
         }
 
         return $uri;
