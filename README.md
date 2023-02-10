@@ -611,7 +611,7 @@ foreach ($collection->getDownloaded()->getImages() as $item) {
 первым аргументов в конструктор (адаптер `Fi1a\Crawler\Proxy\StorageAdapters\LocalFilesystemAdapter` осуществляет
 хранение прокси в json-файле).
 
-Следующий код добавляет прокси в хранилище:
+Доступны два типа прокси: http и socks5 прокси. Следующий код добавляет прокси в хранилище:
 
 ```php
 use Fi1a\Crawler\Proxy\Proxy;
