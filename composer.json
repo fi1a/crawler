@@ -1,7 +1,7 @@
 {
   "name": "fi1a/crawler",
   "type": "library",
-  "description": "PHP Web crawler",
+  "description": "PHP crawler",
   "keywords": [],
   "homepage": "https://github.com/fi1a/crawler",
   "license": "MIT",

@@ -30,14 +30,14 @@ interface ItemInterface
     public function getStatusCode(): ?int;
 
     /**
-     * Текст причины ассоциированный с кодом статуса
+     * Устанавливает текст причины ассоциированный с кодом статуса
      *
      * @return $this
      */
     public function setReasonPhrase(?string $reasonPhrase);
 
     /**
-     * Текст причины ассоциированный с кодом статуса
+     * Возвращает текст причины ассоциированный с кодом статуса
      */
     public function getReasonPhrase(): ?string;
 
@@ -185,6 +185,33 @@ interface ItemInterface
     public function getAbsoluteUri(UriInterface $uri): UriInterface;
 
     /**
+     * Является ли изображением
+     */
+    public function isImage(): bool;
+
+    /**
+     * Является ли "файлом"
+     */
+    public function isFile(): bool;
+
+    /**
+     * Является ли "страницей"
+     */
+    public function isPage(): bool;
+
+    /**
+     * Является ли Css файлом
+     */
+    public function isCss(): bool;
+
+    /**
+     * Является ли Js файлом
+     */
+    public function isJs(): bool;
+
+    /**
+     * В массив
+     *
      * @return array{allow: bool, contentType: string|null, downloadStatus: bool|null, itemUri: string,
      * newItemUri: string|null, processStatus: bool|null, reasonPhrase: string|null, statusCode: int|null,
      * writeStatus: bool|null}

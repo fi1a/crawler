@@ -39,14 +39,14 @@ interface ConfigInterface extends ValueObjectInterface
     public function getStartUri(): array;
 
     /**
-     * Конфигурация http-клиента
+     * Установить объект настроек http-клиента
      *
      * @return $this
      */
     public function setHttpClientConfig(HttpClientConfigInterface $config);
 
     /**
-     * Возвращает конфигурацию http-клиента
+     * Возвращает объект настроек http-клиента
      */
     public function getHttpClientConfig(): HttpClientConfigInterface;
 

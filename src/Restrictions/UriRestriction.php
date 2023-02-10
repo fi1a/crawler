@@ -49,6 +49,6 @@ class UriRestriction implements RestrictionInterface
             return false;
         }
 
-        return mb_stripos($uri->path(), $allowPath) === 0;
+        return mb_stripos($uri->path() ? $uri->path() : '/', $allowPath) === 0;
     }
 }

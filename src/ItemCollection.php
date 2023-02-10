@@ -5,32 +5,12 @@ declare(strict_types=1);
 namespace Fi1a\Crawler;
 
 use Fi1a\Collection\Collection;
-use Fi1a\Http\Mime;
-
-use const PATHINFO_EXTENSION;
 
 /**
- * Коллекция элементов
+ * Коллекция элементов обхода
  */
 class ItemCollection extends Collection implements ItemCollectionInterface
 {
-    /**
-     * @var array<array-key, string>
-     */
-    protected static $imageMimes = [
-        'image/gif', 'image/jpeg', 'image/png', 'image/bmp', 'image/tiff',
-    ];
-
-    /**
-     * @var array<array-key, string>
-     */
-    protected static $pageMimes = [Mime::HTML, Mime::XHTML];
-
-    /**
-     * @var array<array-key, string>
-     */
-    protected static $jsMimes = ['application/javascript', 'text/javascript'];
-
     /**
      * @inheritDoc
      */
@@ -44,9 +24,7 @@ class ItemCollection extends Collection implements ItemCollectionInterface
      */
     public function getDownloaded()
     {
-        return $this->filter(function ($item) {
-            assert($item instanceof ItemInterface);
-
+        return $this->filter(function (ItemInterface $item) {
             return $item->getDownloadStatus() === true;
         });
     }
@@ -56,9 +34,7 @@ class ItemCollection extends Collection implements ItemCollectionInterface
      */
     public function getProcessed()
     {
-        return $this->filter(function ($item) {
-            assert($item instanceof ItemInterface);
-
+        return $this->filter(function (ItemInterface $item) {
             return $item->getProcessStatus() === true;
         });
     }
@@ -68,9 +44,7 @@ class ItemCollection extends Collection implements ItemCollectionInterface
      */
     public function getWrited()
     {
-        return $this->filter(function ($item) {
-            assert($item instanceof ItemInterface);
-
+        return $this->filter(function (ItemInterface $item) {
             return $item->getWriteStatus() === true;
         });
     }
@@ -80,12 +54,8 @@ class ItemCollection extends Collection implements ItemCollectionInterface
      */
     public function getImages()
     {
-        $mimes = static::$imageMimes;
-
-        return $this->filter(function ($item) use ($mimes) {
-            assert($item instanceof ItemInterface);
-
-            return in_array($item->getContentType(), $mimes);
+        return $this->filter(function (ItemInterface $item) {
+            return $item->isImage();
         });
     }
 
@@ -94,13 +64,8 @@ class ItemCollection extends Collection implements ItemCollectionInterface
      */
     public function getFiles()
     {
-        $mimes = array_merge(static::$imageMimes, static::$pageMimes, static::$jsMimes);
-
-        return $this->filter(function ($item) use ($mimes) {
-            assert($item instanceof ItemInterface);
-            $extension = pathinfo($item->getItemUri()->uri(), PATHINFO_EXTENSION);
-
-            return !in_array($item->getContentType(), $mimes) && mb_strtolower($extension) !== 'css';
+        return $this->filter(function (ItemInterface $item) {
+            return $item->isFile();
         });
     }
 
@@ -109,12 +74,8 @@ class ItemCollection extends Collection implements ItemCollectionInterface
      */
     public function getPages()
     {
-        $mimes = static::$pageMimes;
-
-        return $this->filter(function ($item) use ($mimes) {
-            assert($item instanceof ItemInterface);
-
-            return in_array($item->getContentType(), $mimes);
+        return $this->filter(function (ItemInterface $item) {
+            return $item->isPage();
         });
     }
 
@@ -123,12 +84,8 @@ class ItemCollection extends Collection implements ItemCollectionInterface
      */
     public function getCss()
     {
-        return $this->filter(function ($item) {
-            assert($item instanceof ItemInterface);
-
-            $extension = pathinfo($item->getItemUri()->uri(), PATHINFO_EXTENSION);
-
-            return mb_strtolower($extension) === 'css';
+        return $this->filter(function (ItemInterface $item) {
+            return $item->isCss();
         });
     }
 
@@ -137,12 +94,8 @@ class ItemCollection extends Collection implements ItemCollectionInterface
      */
     public function getJs()
     {
-        $mimes = static::$jsMimes;
-
-        return $this->filter(function ($item) use ($mimes) {
-            assert($item instanceof ItemInterface);
-
-            return in_array($item->getContentType(), $mimes);
+        return $this->filter(function (ItemInterface $item) {
+            return $item->isJs();
         });
     }
 }

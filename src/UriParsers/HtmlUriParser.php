@@ -20,6 +20,16 @@ use InvalidArgumentException;
 class HtmlUriParser implements UriParserInterface
 {
     /**
+     * @var string
+     */
+    protected $encoding;
+
+    public function __construct(string $encoding = 'UTF-8')
+    {
+        $this->encoding = $encoding;
+    }
+
+    /**
      * @inheritDoc
      */
     public function parse(
@@ -27,7 +37,7 @@ class HtmlUriParser implements UriParserInterface
         ConsoleOutputInterface $output,
         LoggerInterface $logger
     ): UriCollectionInterface {
-        $sq = new SimpleQuery((string) $item->getBody());
+        $sq = new SimpleQuery((string) $item->getBody(), $this->encoding);
 
         $collection = $this->parseNode('a', 'href', $sq);
         $collection->exchangeArray(

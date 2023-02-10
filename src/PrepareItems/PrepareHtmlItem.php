@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Fi1a\Crawler\PrepareItem;
+namespace Fi1a\Crawler\PrepareItems;
 
 use Fi1a\Console\IO\ConsoleOutputInterface;
 use Fi1a\Crawler\ItemCollectionInterface;
@@ -19,6 +19,16 @@ use InvalidArgumentException;
 class PrepareHtmlItem implements PrepareItemInterface
 {
     /**
+     * @var string
+     */
+    protected $encoding;
+
+    public function __construct(string $encoding = 'UTF-8')
+    {
+        $this->encoding = $encoding;
+    }
+
+    /**
      * @inheritDoc
      */
     public function prepare(
@@ -27,7 +37,7 @@ class PrepareHtmlItem implements PrepareItemInterface
         ConsoleOutputInterface $output,
         LoggerInterface $logger
     ) {
-        $sq = new SimpleQuery((string) $item->getBody());
+        $sq = new SimpleQuery((string) $item->getBody(), $this->encoding);
         $this->replace('a', 'href', $sq, $item, $items);
         $this->replace('img', 'src', $sq, $item, $items);
         $this->replace('link[rel="stylesheet"]', 'href', $sq, $item, $items);

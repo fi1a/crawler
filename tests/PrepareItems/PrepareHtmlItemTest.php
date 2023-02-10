@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Fi1a\Unit\Crawler\PrepareItem;
+namespace Fi1a\Unit\Crawler\PrepareItems;
 
 use Fi1a\Crawler\Item;
 use Fi1a\Crawler\ItemCollection;
-use Fi1a\Crawler\PrepareItem\PrepareHtmlItem;
+use Fi1a\Crawler\PrepareItems\PrepareHtmlItem;
 use Fi1a\Http\Uri;
 use Fi1a\Unit\Crawler\TestCases\TestCase;
 
