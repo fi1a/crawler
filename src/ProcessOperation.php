@@ -25,7 +25,7 @@ class ProcessOperation extends AbstractOperation
     {
         if ($item->getProcessStatus() !== null) {
             $this->output->writeln(
-                '{{index}}/{{count}} <color=blue>Uri {{uri|unescape}} уже преобразован</>',
+                '{{index}}/{{count}} <color=blue>Uri {{uri|unescape}}</>',
                 [
                     'index' => $index,
                     'count' => $this->items->count(),
@@ -33,6 +33,13 @@ class ProcessOperation extends AbstractOperation
                 ],
                 null,
                 OutputInterface::VERBOSE_HIGHT
+            );
+            $this->output->writeln(
+                '    <color=blue>= уже преобразован</>',
+                [
+                ],
+                null,
+                OutputInterface::VERBOSE_HIGHTEST
             );
 
             return;

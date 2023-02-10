@@ -8,7 +8,7 @@ use Fi1a\Console\IO\ConsoleOutput;
 use Fi1a\Console\IO\ConsoleOutputInterface;
 use Fi1a\Console\IO\Formatter;
 use Fi1a\Crawler\ItemStorages\ItemStorageInterface;
-use Fi1a\Crawler\PrepareItem\PrepareItemInterface;
+use Fi1a\Crawler\PrepareItems\PrepareItemInterface;
 use Fi1a\Crawler\Proxy\ProxyCollectionInterface;
 use Fi1a\Crawler\Proxy\ProxyStorageInterface;
 use Fi1a\Crawler\Proxy\Selections\ProxySelectionInterface;
@@ -178,6 +178,16 @@ class Crawler implements CrawlerInterface
     /**
      * @inheritDoc
      */
+    public function setItems(ItemCollectionInterface $items)
+    {
+        $this->items = $items;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function setUriParser(UriParserInterface $parser, ?string $mime = null)
     {
         $this->downloadOperation->setUriParser($parser, $mime);
@@ -272,9 +282,20 @@ class Crawler implements CrawlerInterface
     /**
      * @inheritDoc
      */
-    public function clearStorageData()
+    public function clearStorage()
     {
         $this->itemStorage->clear();
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function loadFromStorage()
+    {
+        $this->items = $this->itemStorage->load();
+        $this->needLoadFromStorage = false;
 
         return $this;
     }
@@ -419,7 +440,7 @@ class Crawler implements CrawlerInterface
 
         $this->output->writeln('<bg=white;color=black>Извлечение данных из хранилища</>');
         $this->logger->info('Извлечение данных из хранилища');
-        $this->items = $this->itemStorage->load();
+        $this->loadFromStorage();
         $this->logger->info(
             '{{count|declension("Извлечен", "Извлечено", "Извлечено")}} {{count}} '
             . '{{count|declension("элемент", "элемента", "элементов")}}',
@@ -431,6 +452,5 @@ class Crawler implements CrawlerInterface
             ['count' => $this->items->count()]
         );
         $this->output->writeln();
-        $this->needLoadFromStorage = false;
     }
 }

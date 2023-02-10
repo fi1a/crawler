@@ -7,8 +7,8 @@ namespace Fi1a\Crawler;
 use Fi1a\Console\IO\ConsoleOutputInterface;
 use Fi1a\Console\IO\OutputInterface;
 use Fi1a\Crawler\ItemStorages\ItemStorageInterface;
-use Fi1a\Crawler\PrepareItem\PrepareHtmlItem;
-use Fi1a\Crawler\PrepareItem\PrepareItemInterface;
+use Fi1a\Crawler\PrepareItems\PrepareHtmlItem;
+use Fi1a\Crawler\PrepareItems\PrepareItemInterface;
 use Fi1a\Crawler\Writers\WriterInterface;
 use Fi1a\Http\Mime;
 use Fi1a\Log\LoggerInterface;
@@ -71,7 +71,7 @@ class WriteOperation extends AbstractOperation
 
         if ($item->getWriteStatus() !== null) {
             $this->output->writeln(
-                '{{index}}/{{count}} <color=green>= Uri {{uri|unescape}} уже записан</>',
+                '{{index}}/{{count}} <color=green>Uri {{uri|unescape}}</>',
                 [
                     'index' => $index,
                     'count' => $this->items->count(),
@@ -79,6 +79,13 @@ class WriteOperation extends AbstractOperation
                 ],
                 null,
                 OutputInterface::VERBOSE_HIGHT
+            );
+            $this->output->writeln(
+                '    <color=blue>= Уже записан</>',
+                [
+                ],
+                null,
+                OutputInterface::VERBOSE_HIGHTEST
             );
 
             return;
@@ -145,14 +152,14 @@ class WriteOperation extends AbstractOperation
                 }
 
                 $this->output->writeln(
-                    '    <color=red>- Не удалось записать</>',
+                    '    <color=red>- Не записан</>',
                     [
                     ],
                     null,
                     OutputInterface::VERBOSE_HIGHT
                 );
                 $this->logger->warning(
-                    '{{uri}} не записан. Не удалось записать',
+                    '{{uri}} не записан',
                     [
                         'uri' => $item->getItemUri()->maskedUri(),
                     ]

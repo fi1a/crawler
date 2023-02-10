@@ -196,6 +196,19 @@ class ItemTest extends TestCase
     }
 
     /**
+     * Возвращает абсолютный uri
+     */
+    public function testAbsoluteUriWithoutFilename(): void
+    {
+        $item = new Item(new Uri($this->getUrl('/some/path/path.php')));
+
+        $this->assertEquals(
+            'https://127.0.0.1:3000/some/path/path.php?foo=bar',
+            $item->getAbsoluteUri(new Uri('?foo=bar'))->uri()
+        );
+    }
+
+    /**
      * Загружен или нет
      */
     public function testDownload(): void
@@ -314,5 +327,72 @@ class ItemTest extends TestCase
         $item->expiresAfter(100);
         $this->assertFalse($item->isExpired());
         $this->assertInstanceOf(DateTime::class, $item->getExpire());
+    }
+
+    /**
+     * Является ли изображением
+     */
+    public function testImage(): void
+    {
+        $item = new Item(new Uri($this->getUrl('/index.html')));
+        $this->assertFalse($item->isImage());
+
+        $item = new Item(new Uri($this->getUrl('/image.jpg')));
+        $item->setContentType('image/jpeg');
+        $this->assertTrue($item->isImage());
+    }
+
+    /**
+     * Является ли "файлом"
+     */
+    public function testFile(): void
+    {
+        $item = new Item(new Uri($this->getUrl('/image.jpg')));
+        $item->setContentType('image/jpeg');
+        $this->assertFalse($item->isFile());
+
+        $item = new Item(new Uri($this->getUrl('/file.pdf')));
+        $this->assertTrue($item->isFile());
+    }
+
+    /**
+     * Является ли "страницей"
+     */
+    public function testPage(): void
+    {
+        $item = new Item(new Uri($this->getUrl('/image.jpg')));
+        $item->setContentType('image/jpeg');
+        $this->assertFalse($item->isPage());
+
+        $item = new Item(new Uri($this->getUrl('/index.html')));
+        $item->setContentType(Mime::HTML);
+        $this->assertTrue($item->isPage());
+    }
+
+    /**
+     * Является ли Css файлом
+     */
+    public function testCss(): void
+    {
+        $item = new Item(new Uri($this->getUrl('/image.jpg')));
+        $item->setContentType('image/jpeg');
+        $this->assertFalse($item->isCss());
+
+        $item = new Item(new Uri($this->getUrl('/style.css')));
+        $this->assertTrue($item->isCss());
+    }
+
+    /**
+     * Является ли Js файлом
+     */
+    public function testJs(): void
+    {
+        $item = new Item(new Uri($this->getUrl('/image.jpg')));
+        $item->setContentType('image/jpeg');
+        $this->assertFalse($item->isJs());
+
+        $item = new Item(new Uri($this->getUrl('/style.css')));
+        $item->setContentType('application/javascript');
+        $this->assertTrue($item->isJs());
     }
 }

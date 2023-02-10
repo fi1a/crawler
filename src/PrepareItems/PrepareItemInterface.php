@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Fi1a\Crawler\PrepareItem;
+namespace Fi1a\Crawler\PrepareItems;
 
 use Fi1a\Console\IO\ConsoleOutputInterface;
 use Fi1a\Crawler\ItemCollectionInterface;

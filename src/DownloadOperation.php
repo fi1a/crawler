@@ -156,7 +156,7 @@ class DownloadOperation extends AbstractOperation
 
         if ($item->getDownloadStatus() !== null) {
             $this->output->writeln(
-                '{{index}}/{{count}} <color=green>Uri {{uri|unescape}} уже загружен</>',
+                '{{index}}/{{count}} <color=green>Uri {{uri|unescape}}</>',
                 [
                     'index' => $index,
                     'count' => $this->items->count(),
@@ -164,6 +164,12 @@ class DownloadOperation extends AbstractOperation
                 ],
                 null,
                 OutputInterface::VERBOSE_HIGHT
+            );
+            $this->output->writeln(
+                '    <color=blue>= Уже загружен</>',
+                [],
+                null,
+                OutputInterface::VERBOSE_HIGHTEST
             );
 
             if ($item->getDownloadStatus() === false) {
@@ -236,6 +242,23 @@ class DownloadOperation extends AbstractOperation
 
             if ($proxy) {
                 $request->withProxy($proxy);
+                $this->output->writeln(
+                    '    <color=yellow>+ Proxy: {{host}}{{if(port)}}:{{port}}{{endif}}</>',
+                    [
+                        'host' => $proxy->getHost(),
+                        'port' => $proxy->getPort(),
+                    ],
+                    null,
+                    OutputInterface::VERBOSE_HIGHTEST
+                );
+                $this->logger->info(
+                    '{{uri}} с proxy {{host}}{{if(port)}}:{{port}}{{endif}}',
+                    [
+                        'uri' => $item->getItemUri()->maskedUri(),
+                        'host' => $proxy->getHost(),
+                        'port' => $proxy->getPort(),
+                    ]
+                );
             }
 
             $retry = $this->config->getRetry();
@@ -577,7 +600,7 @@ class DownloadOperation extends AbstractOperation
             $existingItem = $this->items->get($uri->uri());
             if ($existingItem->isAllow()) {
                 $this->output->writeln(
-                    '        <color=blue>= Уже добавлен</>',
+                    '    <color=blue>= Уже добавлен</>',
                     [],
                     null,
                     OutputInterface::VERBOSE_HIGHTEST
@@ -592,7 +615,7 @@ class DownloadOperation extends AbstractOperation
                 return false;
             }
             $this->output->writeln(
-                '        <color=blue>= Запрещен обход для этого адреса</>',
+                '    <color=blue>= Запрещен обход для этого адреса</>',
                 [],
                 null,
                 OutputInterface::VERBOSE_HIGHTEST
@@ -619,7 +642,7 @@ class DownloadOperation extends AbstractOperation
 
         if (!$allow) {
             $this->output->writeln(
-                '        <color=blue>- Запрещен обход для этого адреса</>',
+                '    <color=blue>- Запрещен обход для этого адреса</>',
                 [],
                 null,
                 OutputInterface::VERBOSE_HIGHTEST
@@ -636,7 +659,7 @@ class DownloadOperation extends AbstractOperation
 
         if ($item->isAllow()) {
             $this->output->writeln(
-                '        <color=yellow>+ Добавлен в очередь</>',
+                '    <color=yellow>+ Добавлен в очередь</>',
                 [],
                 null,
                 OutputInterface::VERBOSE_HIGHTEST

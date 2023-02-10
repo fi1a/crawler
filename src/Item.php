@@ -5,15 +5,35 @@ declare(strict_types=1);
 namespace Fi1a\Crawler;
 
 use DateTime;
+use Fi1a\Http\Mime;
 use Fi1a\Http\Uri;
 use Fi1a\Http\UriInterface;
 use InvalidArgumentException;
+
+use const PATHINFO_EXTENSION;
 
 /**
  * Элемент обхода
  */
 class Item implements ItemInterface
 {
+    /**
+     * @var array<array-key, string>
+     */
+    protected static $imageMimes = [
+        'image/gif', 'image/jpeg', 'image/png', 'image/bmp', 'image/tiff',
+    ];
+
+    /**
+     * @var array<array-key, string>
+     */
+    protected static $pageMimes = [Mime::HTML, Mime::XHTML];
+
+    /**
+     * @var array<array-key, string>
+     */
+    protected static $jsMimes = ['application/javascript', 'text/javascript'];
+
     /**
      * @var UriInterface
      */
@@ -373,6 +393,51 @@ class Item implements ItemInterface
         }
 
         return $uri;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isImage(): bool
+    {
+        return in_array($this->getContentType(), static::$imageMimes);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isFile(): bool
+    {
+        $mimes = array_merge(static::$imageMimes, static::$pageMimes, static::$jsMimes);
+        $extension = pathinfo($this->getItemUri()->uri(), PATHINFO_EXTENSION);
+
+        return !in_array($this->getContentType(), $mimes) && mb_strtolower($extension) !== 'css';
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isPage(): bool
+    {
+        return in_array($this->getContentType(), static::$pageMimes);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isCss(): bool
+    {
+        $extension = pathinfo($this->getItemUri()->uri(), PATHINFO_EXTENSION);
+
+        return mb_strtolower($extension) === 'css';
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isJs(): bool
+    {
+        return in_array($this->getContentType(), static::$jsMimes);
     }
 
     /**

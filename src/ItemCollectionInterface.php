@@ -12,21 +12,21 @@ use Fi1a\Collection\CollectionInterface;
 interface ItemCollectionInterface extends CollectionInterface
 {
     /**
-     * Возвращает кол-во успешно загруженных
+     * Возвращает успешно загруженные элементы
      *
      * @return static
      */
     public function getDownloaded();
 
     /**
-     * Возвращает кол-во успешно обработанных
+     * Возвращает успешно обработанные элементы
      *
      * @return static
      */
     public function getProcessed();
 
     /**
-     * Возвращает кол-во успешно записанных
+     * Возвращает успешно записанные элементы
      *
      * @return static
      */

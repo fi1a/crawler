@@ -8,10 +8,11 @@ use Fi1a\Crawler\Config;
 use Fi1a\Crawler\ConfigInterface;
 use Fi1a\Crawler\Crawler;
 use Fi1a\Crawler\CrawlerInterface;
+use Fi1a\Crawler\ItemCollection;
 use Fi1a\Crawler\ItemInterface;
 use Fi1a\Crawler\ItemStorages\ItemStorage;
 use Fi1a\Crawler\ItemStorages\StorageAdapters\LocalFilesystemAdapter;
-use Fi1a\Crawler\PrepareItem\PrepareHtmlItem;
+use Fi1a\Crawler\PrepareItems\PrepareHtmlItem;
 use Fi1a\Crawler\Proxy\ProxyCollection;
 use Fi1a\Crawler\Proxy\Selections\OnlyActive;
 use Fi1a\Crawler\Proxy\Selections\SortedByTime;
@@ -102,7 +103,7 @@ class CrawlerTest extends TestCase
     {
         $crawler = $this->getCrawler();
 
-        $crawler->clearStorageData();
+        $crawler->clearStorage();
         $crawler->run();
         $this->assertCount(1, $crawler->getRestrictions());
         $this->assertTrue($crawler->hasUriParser());
@@ -131,7 +132,7 @@ class CrawlerTest extends TestCase
 
         $crawler->setWriter(new FileWriter($this->runtimeFolder . '/web'));
 
-        $crawler->clearStorageData();
+        $crawler->clearStorage();
         $crawler->run();
         $this->assertCount(1, $crawler->getRestrictions());
         $this->assertTrue($crawler->hasUriParser());
@@ -147,7 +148,7 @@ class CrawlerTest extends TestCase
             );
         });
 
-        $crawler->clearStorageData();
+        $crawler->clearStorage();
         $crawler->run();
         $this->assertCount(1, $crawler->getRestrictions());
         $this->assertTrue($crawler->hasUriParser());
@@ -164,7 +165,7 @@ class CrawlerTest extends TestCase
     {
         $crawler = $this->getCrawler();
 
-        $crawler->clearStorageData();
+        $crawler->clearStorage();
         $crawler->run();
         $this->assertCount(1, $crawler->getRestrictions());
         $this->assertTrue($crawler->hasUriParser());
@@ -212,7 +213,7 @@ class CrawlerTest extends TestCase
 
         $crawler->setWriter(new FileWriter($this->runtimeFolder . '/web'));
 
-        $crawler->clearStorageData();
+        $crawler->clearStorage();
         $crawler->run();
         $this->assertCount(1, $crawler->getRestrictions());
         $this->assertTrue($crawler->hasUriParser());
@@ -236,7 +237,7 @@ class CrawlerTest extends TestCase
 
         $crawler->setWriter(new FileWriter($this->runtimeFolder . '/web'));
 
-        $crawler->clearStorageData();
+        $crawler->clearStorage();
         $crawler->run();
         $this->assertCount(1, $crawler->getRestrictions());
         $this->assertTrue($crawler->hasUriParser());
@@ -257,7 +258,7 @@ class CrawlerTest extends TestCase
         $crawler = new Crawler($config, new ItemStorage(new LocalFilesystemAdapter($this->runtimeFolder)));
         $crawler->setWriter(new FileWriter($this->runtimeFolder . '/web'));
 
-        $crawler->clearStorageData();
+        $crawler->clearStorage();
         $startTime = time();
         $crawler->run();
         $this->assertTrue(time() - $startTime >= $crawler->getItems()->getDownloaded()->count());
@@ -282,7 +283,7 @@ class CrawlerTest extends TestCase
         $crawler->setProxySelection(new SortedByTime(new OnlyActive()));
         $crawler->setWriter(new FileWriter($this->runtimeFolder . '/web'));
 
-        $crawler->clearStorageData();
+        $crawler->clearStorage();
         $crawler->run();
         $this->assertCount(1, $crawler->getRestrictions());
         $this->assertTrue($crawler->hasUriParser());
@@ -305,7 +306,7 @@ class CrawlerTest extends TestCase
         $crawler->setWriter(new FileWriter($this->runtimeFolder . '/web'));
         $crawler->setProxyStorage($this->getProxyStorageWithSavedProxy());
 
-        $crawler->clearStorageData();
+        $crawler->clearStorage();
         $crawler->run();
         $this->assertCount(1, $crawler->getRestrictions());
         $this->assertTrue($crawler->hasUriParser());
@@ -336,7 +337,7 @@ class CrawlerTest extends TestCase
 
         $crawler->setWriter(new FileWriter($this->runtimeFolder . '/web'));
         $crawler->setProxyCollection($collection);
-        $crawler->clearStorageData();
+        $crawler->clearStorage();
         $crawler->run();
         $this->assertCount(1, $crawler->getRestrictions());
         $this->assertTrue($crawler->hasUriParser());
@@ -362,7 +363,7 @@ class CrawlerTest extends TestCase
         $crawler->setWriter(new FileWriter($this->runtimeFolder . '/web'));
         $crawler->setUriTransformer(new SiteUriTransformer());
 
-        $crawler->clearStorageData();
+        $crawler->clearStorage();
         $crawler->run();
         $this->assertCount(1, $crawler->getRestrictions());
         $this->assertTrue($crawler->hasUriParser());
@@ -419,6 +420,8 @@ class CrawlerTest extends TestCase
 
         $crawler->run();
         $this->assertCount(12, $crawler->getItems());
+        $crawler->setItems(new ItemCollection());
+        $this->assertCount(0, $crawler->getItems());
     }
 
     /**
@@ -575,7 +578,7 @@ class CrawlerTest extends TestCase
         $crawler->setUriParser($uriParser);
         $crawler->setPrepareItem($prepare);
 
-        $crawler->clearStorageData();
+        $crawler->clearStorage();
         $crawler->run();
     }
 
@@ -603,7 +606,26 @@ class CrawlerTest extends TestCase
         $crawler->setUriParser($uriParser);
         $crawler->setWriter($writer, Mime::HTML);
 
-        $crawler->clearStorageData();
+        $crawler->clearStorage();
         $crawler->run();
+    }
+
+    /**
+     * Работа с данными из хранилища
+     */
+    public function testStorage(): void
+    {
+        $crawler = $this->getCrawler();
+        $crawler->run();
+        $this->assertCount(12, $crawler->getItems());
+
+        $crawler = $this->getCrawler();
+        $crawler->loadFromStorage();
+        $this->assertCount(12, $crawler->getItems());
+
+        $crawler = $this->getCrawler();
+        $crawler->clearStorage();
+        $crawler->loadFromStorage();
+        $this->assertCount(0, $crawler->getItems());
     }
 }
