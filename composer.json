@@ -51,9 +51,9 @@
     }
   },
   "scripts": {
-    "fl:lint": "phpcs --config-set php_version 70300 && phpcs --cache=build/cache/phpcs.cache",
-    "fl:phpcbf": "phpcbf --cache=build/cache/phpcbf.cache",
-    "fl:test:unit:coverage:ci": "phpunit --coverage-clover build/logs/clover.xml",
+    "fl:lint": "phpcs --config-set php_version 70300 && phpcs --cache=runtime/cache/phpcs.cache",
+    "fl:phpcbf": "phpcbf --cache=runtime/cache/phpcbf.cache",
+    "fl:test:unit:coverage:ci": "phpunit --coverage-clover runtime/logs/clover.xml",
     "fl:test:unit": "phpunit",
     "fl:psalm": "psalm",
     "fl:check": [

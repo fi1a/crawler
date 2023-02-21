@@ -6,7 +6,7 @@
     xmlns="https://getpsalm.org/schema/config"
     xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
     useDocblockPropertyTypes="true"
-    cacheDirectory="./build/cache"
+    cacheDirectory="./runtime/cache"
 >
     <projectFiles>
         <directory name="src" />
