@@ -237,11 +237,11 @@ class DownloadOperation extends AbstractOperation
 
             /** @var RequestInterface $request */
             $request = call_user_func($this->requestFactory, $item);
-            $request->withMethod(Http::GET)
+            $request = $request->withMethod(Http::GET)
                 ->withUri($item->getItemUri());
 
             if ($proxy) {
-                $request->withProxy($proxy);
+                $request = $request->withProxy($proxy);
                 $this->output->writeln(
                     '    <color=yellow>+ Proxy: {{host}}{{if(port)}}:{{port}}{{endif}}</>',
                     [
@@ -263,7 +263,7 @@ class DownloadOperation extends AbstractOperation
 
             $retry = $this->config->getRetry();
             if ($retry) {
-                $request->withMiddleware(new RetryMiddleware($retry));
+                $request = $request->withMiddleware(new RetryMiddleware($retry));
             }
 
             try {
